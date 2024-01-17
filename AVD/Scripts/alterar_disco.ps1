@@ -34,7 +34,29 @@ Connect-AzAccount
 
 $total_vms = Get-AzResource -ResourceType "Microsoft.Compute/virtualMachines" | Select-Object -Property ResourceName, ResourceGroupName, Type
 
-foreach ($vms in $vms_Csv){
+
+foreach ($vms in $total_vms){
+
+#propriedades hardware vms
+$vmConfig = Get-AzVM -ResourceGroupName $vms.ResourceGroupName -Name $vms.ResourceName
+
+#vm name
+$vms.ResourceName
+
+# tipo de hardware
+$vmConfig.HardwareProfile
+
+#nome disco
+$vmConfig.StorageProfile.OsDisk.Name 
+
+#imagem referencia
+$vmConfig.StorageProfile.ImageReference
+
+}
+
+$vmConfig = Get-AzVM -ResourceGroupName $ms_resource -Name $vms_vm 
+
+foreach ($vms in $total_vms){
 Try
 { 
 
