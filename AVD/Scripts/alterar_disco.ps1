@@ -44,10 +44,12 @@ $vmConfig = Get-AzVM -ResourceGroupName $vms.ResourceGroupName -Name $vms.Resour
 $vms.ResourceName
 
 # tipo de hardware
-$vmConfig.HardwareProfile
+$vmConfig.HardwareProfile.VmSize
 
 #nome disco
 $vmConfig.StorageProfile.OsDisk.Name 
+
+$vmConfig.StorageProfile.OsDisk.DiskSizeGB
 
 #imagem referencia
 $vmConfig.StorageProfile.ImageReference
@@ -61,13 +63,13 @@ Try
 { 
 
 
-$diskName = 'yourDiskName'
+$diskName = $vmConfig.StorageProfile.OsDisk.Name 
 # resource group that contains the managed disk
-$rgName = 'yourResourceGroupName'
+$rgName = $vms.ResourceGroupName
 # Choose between Standard_LRS, StandardSSD_LRS, StandardSSD_ZRS, Premium_ZRS, and Premium_LRS based on your scenario
-$storageType = 'Premium_LRS'
+$storageType = 'Standard_LRS'
 # Premium capable size 
-$size = 'Standard_DS2_v2'
+$size = $vmConfig.HardwareProfile.VmSize
 
 $disk = Get-AzDisk -DiskName $diskName -ResourceGroupName $rgName
 
