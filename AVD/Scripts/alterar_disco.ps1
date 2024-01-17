@@ -44,26 +44,30 @@ $vmConfig = Get-AzVM -ResourceGroupName $vms.ResourceGroupName -Name $vms.Resour
 $vms.ResourceName
 
 # tipo de hardware
-$vmConfig.HardwareProfile.VmSize
+$vmConfig.HardwareProfile
 
 #nome disco
 $vmConfig.StorageProfile.OsDisk.Name 
 
-$vmConfig.StorageProfile.OsDisk.DiskSizeGB
-
 #imagem referencia
 $vmConfig.StorageProfile.ImageReference
 
+}
+
+$vmConfig = Get-AzVM -ResourceGroupName $ms_resource -Name $vms_vm 
+
+foreach ($vms in $total_vms){
 Try
 { 
+
 
 $diskName = $vmConfig.StorageProfile.OsDisk.Name 
 # resource group that contains the managed disk
 $rgName = $vms.ResourceGroupName
 # Choose between Standard_LRS, StandardSSD_LRS, StandardSSD_ZRS, Premium_ZRS, and Premium_LRS based on your scenario
-$storageType = 'Standard_LRS'
+$storageType = 'Premium_LRS'
 # Premium capable size 
-$size = $vmConfig.HardwareProfile.VmSize
+$size = 'Standard_DS2_v2'
 
 $disk = Get-AzDisk -DiskName $diskName -ResourceGroupName $rgName
 
@@ -71,9 +75,9 @@ $disk = Get-AzDisk -DiskName $diskName -ResourceGroupName $rgName
 $vmResource = Get-AzResource -ResourceId $disk.ManagedBy
 
 # Stop and deallocate the VM before changing the storage type
-Stop-AzVM -ResourceGroupName $vms.ResourceGroupName -Name $vms.ResourceName -Force
+Stop-AzVM -ResourceGroupName $vmResource.ResourceGroupName -Name $vmResource.Name -Force
 
-$vm = Get-AzVM -ResourceGroupName $vms.ResourceGroupName -Name $vms.ResourceName
+$vm = Get-AzVM -ResourceGroupName $vmResource.ResourceGroupName -Name $vmResource.Name 
 
 # Change the VM size to a size that supports Premium storage
 # Skip this step if converting storage from Premium to Standard
@@ -84,7 +88,7 @@ Update-AzVM -VM $vm -ResourceGroupName $rgName
 $disk.Sku = [Microsoft.Azure.Management.Compute.Models.DiskSku]::new($storageType)
 $disk | Update-AzDisk
 
-#Start-AzVM -ResourceGroupName $vm.ResourceGroupName -Name $vm.Name
+Start-AzVM -ResourceGroupName $vm.ResourceGroupName -Name $vm.Name
 
 }
 
