@@ -7,8 +7,6 @@ Usage:         .\CRIAR_HOSTPOOL.ps1
 version:       V1.0
 Date_create:   23/01/2024
 Date_modified: 23/01/2024
-links: https://learn.microsoft.com/pt-br/azure/virtual-desktop/deploy-azure-virtual-desktop?tabs=powershell
-Links: https://learn.microsoft.com/pt-br/powershell/module/az.desktopvirtualization/new-azwvdapplicationgroup?view=azps-11.2.0
 Links: https://askaresh.com/2022/12/13/azure-virtual-desktop-powershell-create-a-host-pool-application-group-and-workspace-for-remoteapp-aka-published-applications/
 ===============================================================================
 
