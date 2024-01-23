@@ -17,6 +17,7 @@ $ExportFilePath = "C:\Users\caras\Documents\Cloud\Azure\AVD\"
 $avd_hostpool = $ExportFilePath + "report_avd_hostpool.csv"
 $avd_vms = $ExportFilePath + "report_avd_vm.csv"
 
+
 # Conectar azure
 Connect-AzAccount
 
