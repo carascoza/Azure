@@ -1,12 +1,15 @@
 @"
 ===============================================================================
                     SCRIPT
-Title:         REPORT VMS AVD
-Description:   REPORT VMS AVD
-Usage:         .\reporte_avd.ps1
+Title:         CRIAR HOSTPOOL AVD
+Description:   CRIAR HOSTPOOL AVD
+Usage:         .\CRIAR_HOSTPOOL.ps1
 version:       V1.0
-Date_create:   17/01/2024
-Date_modified: 17/01/2024
+Date_create:   23/01/2024
+Date_modified: 23/01/2024
+links: https://learn.microsoft.com/pt-br/azure/virtual-desktop/deploy-azure-virtual-desktop?tabs=powershell
+Links: https://learn.microsoft.com/pt-br/powershell/module/az.desktopvirtualization/new-azwvdapplicationgroup?view=azps-11.2.0
+Links: https://askaresh.com/2022/12/13/azure-virtual-desktop-powershell-create-a-host-pool-application-group-and-workspace-for-remoteapp-aka-published-applications/
 ===============================================================================
 
 "@
@@ -24,6 +27,7 @@ $Name_HostPoolType = 'Personal'
 # Tipo 'Pooled' (Multisession), Tipo 'Persistent'' (dedicado)
 $Name_LoadBalancerType = 'Persistent'
 $NameGroup = 'GRP_AZURE_AVD'
+$Name_Aplication = $Name_hostpool + "-DAG"
 
 
 # Conectar azure
@@ -34,7 +38,7 @@ Connect-AzAccount
 Select-AzSubscription -SubscriptionId $SubscriptionId 
 
 # Criar resource Group
-#New-AzResourceGroup -Name $Name_resource -Location $Name_Location
+New-AzResourceGroup -Name $Name_resource -Location $Name_Location
 
 
 # Criar um pool de host
@@ -52,12 +56,20 @@ New-AzWvdHostPool @parameters
 
 
 # Criar um workspace
-New-AzWvdWorkspace -Name $Name_hostpool -ResourceGroupName $Name_resource
+New-AzWvdWorkspace -ResourceGroupName $Name_resource `
+                        -Name $Name_hostpool `
+                        -Location $Name_Location `
+                        -FriendlyName $Name_hostpool `
+                        -ApplicationGroupReference $null `
+                        -Description 'Description'
+
 
 
 # Criar um grupo de aplicativos
+$hostPoolArmPath = (Get-AzWvdHostPool -Name $Name_hostpool -ResourceGroupName $Name_resource).Id
+
 $parameters = @{
-    Name = $Name_hostpool
+    Name = $Name_Aplication
     ResourceGroupName = $Name_resource
     ApplicationGroupType = 'Desktop'
     HostPoolArmPath = $hostPoolArmPath
@@ -68,20 +80,31 @@ New-AzWvdApplicationGroup @parameters
 
 
 # Adicionar um grupo de aplicativos a um workspace
-$appGroupPath = (Get-AzWvdApplicationGroup -Name $Name_hostpool -ResourceGroupName $Name_resource).Id
-Update-AzWvdWorkspace -Name $Name_hostpool -ResourceGroupName $Name_resource -ApplicationGroupReference $appGroupPath
+#$appGroupPath = (Get-AzWvdApplicationGroup -Name $Name_hostpool -ResourceGroupName $Name_resource).Id
+#Update-AzWvdWorkspace -Name $Name_hostpool -ResourceGroupName $Name_resource -ApplicationGroupReference $appGroupPath
 
 
 # Get the object ID of the user group you want to assign to the application group
 $userGroupId = (Get-AzADGroup -DisplayName $NameGroup).Id
 
-# Assign users to the application group
-$parameters = @{
-    ObjectId = $userGroupId
-    ResourceName = $Name_hostpool
-    ResourceGroupName = $Name_resource
-    RoleDefinitionName = 'Desktop Virtualization User'
-    ResourceType = 'Microsoft.DesktopVirtualization/applicationGroups'
+# Assign the AAD group (Object ID)  to the Application Group
+try
+{
+    write-host "Assigning the AAD Group to the Application Group"
+    $AssignAADGrpAG = New-AzRoleAssignment -ObjectId $userGroupId `
+        -RoleDefinitionName "Desktop Virtualization User" `
+        -ResourceName $Name_Aplication `
+        -ResourceGroupName $Name_resource `
+        -ResourceType 'Microsoft.DesktopVirtualization/applicationGroups' `
+        -ErrorAction STOP
+}
+catch
+{
+    Write-Host $_.Exception.Message -ForegroundColor Yellow
 }
 
-New-AzRoleAssignment @parameters
+
+
+#remover Role
+#Remove-AzRoleAssignment -SignInName $userGroupId `
+#-RoleDefinitionName "Desktop Virtualization User" 
