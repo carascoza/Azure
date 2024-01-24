@@ -61,6 +61,16 @@ if($ad_vm.name -eq $vms_vm){
 
 Write-Host -BackgroundColor yellow -ForegroundColor Black -Object "Removendo estacao: $vms_vm da azrue... "
 
+}
+
+Catch{
+
+$ErrorMessage = $_.Exception.Message
+    $vms.vms + ";" +$ErrorMessage | Out-File $LogFile -Append -Force
+    Write-Host -BackgroundColor red -ForegroundColor Black -Object $ErrorMessage
+}
+
+
 $avd_vm = $null
 $avd_vm = Get-AzVM -ResourceGroupName $ms_resource -Name $vms_vm
 $avd_vm.Name
@@ -83,15 +93,6 @@ Remove-AzVm `
     Write-Host -BackgroundColor green -ForegroundColor Black -Object "Estacao: $vms_vm removida da azure... " 
  }
 
-
-}
-
-Catch{
-
-$ErrorMessage = $_.Exception.Message
-    $vms.vms + ";" +$ErrorMessage | Out-File $LogFile -Append -Force
-    Write-Host -BackgroundColor red -ForegroundColor Black -Object $ErrorMessage
-}
 }
 
 
