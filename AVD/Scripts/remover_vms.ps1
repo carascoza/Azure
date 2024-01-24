@@ -21,12 +21,12 @@ Write-Host -BackgroundColor yellow -ForegroundColor Black -Object "Necessario in
 #variaveis
 $LogTime = Get-Date -Format "dd-MM-yyyy_hh-mm-ss"
 $Time = Get-Date -Format "MM-dd-yyyy"
-$LogFile  = "C:\Users\caras\Documents\Cloud\Azure\AVD\remover_vms_" + $Time + ".log"
-$ExportFilePath ="C:\Users\caras\Documents\Cloud\Azure\AVD\"
+$LogFile  = "<informar caminho>\remover_vms_" + $Time + ".log"
+$ExportFilePath = "<informar caminho>"
 $remove_vms = $ExportFilePath + "remover_vms.csv"
 $vms_Csv = Import-Csv $remove_vms -Delimiter ';'
-$subscript = "b3e78373-d280-4a8b-acd9-90118435ea62"
-$TenantID = "7fee076f-d820-4777-85a7-10a11153d96e"
+$subscript = "<informar>"
+$TenantID = "<informar>"
 
 #conectar na azure tenant Bradesco
 #Import-Module Az.Avd
@@ -112,7 +112,7 @@ function GetAuthToken($resource) {
 }
 $token = GetAuthToken -resource "https://management.azure.com"
 
-$vm_hostpool = $vms_vm + ".mac-lab01.ml"
+$vm_hostpool = $vms_vm + "<informar dominio>"
 $ResourceGroupName = $vms_resource
 $hostpoolname = $vms_resource
 $SessionHostName = $vm_hostpool
