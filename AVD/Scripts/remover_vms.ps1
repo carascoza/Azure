@@ -90,6 +90,21 @@ $ErrorMessage = $_.Exception.Message
 }
 }
 
+
+Try
+{ 
+# Remover Vm HostPool link: https://rozemuller.com/move-avd-session-hosts-to-a-new-host-pool-with-rest-api/
+Remove-AvdSessionHost -HostpoolName $hostpoolname -ResourceGroupName $ResourceGroupName -Name $SessionHostName
+
+}
+
+Catch{
+
+$ErrorMessage = $_.Exception.Message
+    $vms.vms + ";" +$ErrorMessage | Out-File $LogFile -Append -Force
+    Write-Host -BackgroundColor red -ForegroundColor Black -Object $ErrorMessage
+}
+
 #Variavel data formatada.
 $LogTime2 = Get-Date -Format "MM-dd-yyyy_hh-mm-ss"
 "Termino: " + $LogTime2 | Out-File $LogFile -Append -Force 

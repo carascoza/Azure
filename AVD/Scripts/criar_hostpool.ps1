@@ -37,9 +37,21 @@ Connect-AzAccount
 # Select the target subscription for the current session
 Select-AzSubscription -SubscriptionId $SubscriptionId 
 
+try
+{
+
 # Criar resource Group
 New-AzResourceGroup -Name $Name_resource -Location $Name_Location
+    
+}
+catch
+{
+    Write-Host $_.Exception.Message -ForegroundColor Yellow
+}
 
+
+try
+{
 
 # Criar um pool de host
 $parameters = @{
@@ -54,6 +66,11 @@ $parameters = @{
 
 New-AzWvdHostPool @parameters
 
+}
+catch
+{
+    Write-Host $_.Exception.Message -ForegroundColor Yellow
+}
 
 # Criar um workspace
 New-AzWvdWorkspace -ResourceGroupName $Name_resource `
@@ -63,8 +80,8 @@ New-AzWvdWorkspace -ResourceGroupName $Name_resource `
                         -ApplicationGroupReference $null `
                         -Description 'Description'
 
-
-
+try
+{
 # Criar um grupo de aplicativos
 $hostPoolArmPath = (Get-AzWvdHostPool -Name $Name_hostpool -ResourceGroupName $Name_resource).Id
 
@@ -78,23 +95,38 @@ $parameters = @{
 
 New-AzWvdApplicationGroup @parameters
 
+}
+catch
+{
+    Write-Host $_.Exception.Message -ForegroundColor Yellow
+}
 
+try
+{
 # Update Propriedades Hostpool
 $properties="drivestoredirect:s:;audiomode:i:0;videoplaybackmode:i:1;redirectclipboard:i:1;redirectprinters:i:1;devicestoredirect:s:*;redirectcomports:i:0;redirectsmartcards:i:1;usbdevicestoredirect:s:;enablecredsspsupport:i:1;redirectwebauthn:i:1;autoreconnectionenabled:i:1;audiocapturemode:i:1;camerastoredirect:s:*;"
 Update-AzWvdHostPool -ResourceGroupName $Name_resource -Name $Name_hostpool -CustomRdpProperty $properties
 
+# Habilitar auto iniciar VM
+Update-AzWvdHostPool -ResourceGroupName $Name_resource -Name $Name_hostpool -StartVMOnConnect:$true
 
 # Adicionar um grupo de aplicativos a um workspace
 #$appGroupPath = (Get-AzWvdApplicationGroup -Name $Name_hostpool -ResourceGroupName $Name_resource).Id
 #Update-AzWvdWorkspace -Name $Name_hostpool -ResourceGroupName $Name_resource -ApplicationGroupReference $appGroupPath
 
+}
+catch
+{
+    Write-Host $_.Exception.Message -ForegroundColor Yellow
+}
 
+try
+{
 # Get the object ID of the user group you want to assign to the application group
 $userGroupId = (Get-AzADGroup -DisplayName $NameGroup).Id
 
 # Assign the AAD group (Object ID)  to the Application Group
-try
-{
+
     write-host "Assigning the AAD Group to the Application Group"
     $AssignAADGrpAG = New-AzRoleAssignment -ObjectId $userGroupId `
         -RoleDefinitionName "Desktop Virtualization User" `
@@ -107,7 +139,6 @@ catch
 {
     Write-Host $_.Exception.Message -ForegroundColor Yellow
 }
-
 
 #remover Role
 #Remove-AzRoleAssignment -SignInName $userGroupId `
