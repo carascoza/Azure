@@ -1,3 +1,4 @@
+
 @"
 ===============================================================================
                     SCRIPT
@@ -21,15 +22,18 @@ Write-Host -BackgroundColor yellow -ForegroundColor Black -Object "Necessario in
 #variaveis
 $LogTime = Get-Date -Format "dd-MM-yyyy_hh-mm-ss"
 $Time = Get-Date -Format "MM-dd-yyyy"
-$LogFile  = "CAMINHO\remover_vms_" + $Time + ".log"
-$ExportFilePath ="CAMINHO\"
+$LogFile  = "C:\Users\caras\Documents\Cloud\Azure\AVD\remover_vms_" + $Time + ".log"
+$ExportFilePath ="C:\Users\caras\Documents\Cloud\Azure\AVD\"
 $remove_vms = $ExportFilePath + "remover_vms.csv"
 $vms_Csv = Import-Csv $remove_vms -Delimiter ';'
-
+$subscript = "b3e78373-d280-4a8b-acd9-90118435ea62"
+$TenantID = "7fee076f-d820-4777-85a7-10a11153d96e"
 
 #conectar na azure tenant Bradesco
+Import-Module Az.Avd
+Connect-Avd -TenantID $TenantID -Subscription $subscript
 Connect-AzAccount
-Set-AzContext -Subscription ""
+Set-AzContext -Subscription $subscript
 
 foreach ($vms in $vms_Csv){
 Try
@@ -93,8 +97,10 @@ $ErrorMessage = $_.Exception.Message
 
 Try
 { 
-# Remover Vm HostPool link: https://rozemuller.com/move-avd-session-hosts-to-a-new-host-pool-with-rest-api/
-Remove-AvdSessionHost -HostpoolName $hostpoolname -ResourceGroupName $ResourceGroupName -Name $SessionHostName
+# Remover Vm HostPool necessario modulo Install-Module -Name Az.Avd
+#link: https://rozemuller.com/move-avd-session-hosts-to-a-new-host-pool-with-rest-api/
+$vm_hostpool = $vms_vm + ".mac-lab01.ml"
+Remove-AvdSessionHost -HostpoolName $vms_resource -ResourceGroupName $vms_resource -Name $vm_hostpool
 
 }
 
