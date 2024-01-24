@@ -1,4 +1,3 @@
-
 @"
 ===============================================================================
                     SCRIPT
@@ -7,7 +6,7 @@ Description:   REMOVER VMS AZURE
 Usage:         .\remover_vms.ps1
 version:       V2.0
 Date_create:   26/12/2023
-Date_modified: 27/12/2023
+Date_modified: 24/01/2023
 ===============================================================================
 "@
 
@@ -30,8 +29,8 @@ $subscript = "b3e78373-d280-4a8b-acd9-90118435ea62"
 $TenantID = "7fee076f-d820-4777-85a7-10a11153d96e"
 
 #conectar na azure tenant Bradesco
-Import-Module Az.Avd
-#Connect-Avd -TenantID $TenantID -Subscription $subscript -DeviceCode
+#Import-Module Az.Avd
+#Connect-Avd -TenantID $TenantID -Subscription $subscript
 Connect-AzAccount
 Set-AzContext -Subscription $subscript
 
@@ -93,6 +92,7 @@ Remove-AzVm `
     Write-Host -BackgroundColor green -ForegroundColor Black -Object "Estacao: $vms_vm removida da azure... " 
  }
 
+
 }
 
 
@@ -100,8 +100,32 @@ Try
 { 
 # Remover Vm HostPool necessario modulo Install-Module -Name Az.Avd
 #link: https://rozemuller.com/move-avd-session-hosts-to-a-new-host-pool-with-rest-api/
+
+function GetAuthToken($resource) {
+    $context = [Microsoft.Azure.Commands.Common.Authentication.Abstractions.AzureRmProfileProvider]::Instance.Profile.DefaultContext
+    $Token = [Microsoft.Azure.Commands.Common.Authentication.AzureSession]::Instance.AuthenticationFactory.Authenticate($context.Account, $context.Environment, $context.Tenant.Id.ToString(), $null, [Microsoft.Azure.Commands.Common.Authentication.ShowDialog]::Never, $null, $resource).AccessToken
+    $authHeader = @{
+        'Content-Type' = 'application/json'
+        Authorization  = 'Bearer ' + $Token
+    }
+    return $authHeader
+}
+$token = GetAuthToken -resource "https://management.azure.com"
+
 $vm_hostpool = $vms_vm + ".mac-lab01.ml"
-Remove-AvdSessionHost -HostpoolName $vms_resource -ResourceGroupName $vms_resource -Name $vm_hostpool
+$ResourceGroupName = $vms_resource
+$hostpoolname = $vms_resource
+$SessionHostName = $vm_hostpool
+
+$SessionHostUrl = "https://management.azure.com/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.DesktopVirtualization/hostpools/{2}/sessionHosts/{3}?api-version=2021-03-09-preview" -f $subscriptionId, $ResourceGroupName, $HostpoolName, $SessionHostName
+$parameters = @{
+    uri     = $SessionHostUrl
+    Method  = "DELETE"
+    Headers = $token
+}
+$sessionHost = Invoke-RestMethod @parameters
+
+
 
 }
 
