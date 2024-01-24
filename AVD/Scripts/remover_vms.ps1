@@ -31,7 +31,7 @@ $TenantID = "7fee076f-d820-4777-85a7-10a11153d96e"
 
 #conectar na azure tenant Bradesco
 Import-Module Az.Avd
-Connect-Avd -TenantID $TenantID -Subscription $subscript
+Connect-Avd -TenantID $TenantID -Subscription $subscript -ClientID 'Microsoft Azure PowerShell'
 Connect-AzAccount
 Set-AzContext -Subscription $subscript
 
