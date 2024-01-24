@@ -26,7 +26,7 @@ $Name_Location = 'eastus2'
 $Name_HostPoolType = 'Personal'
 # Tipo 'Pooled' (Multisession), Tipo 'Persistent'' (dedicado)
 $Name_LoadBalancerType = 'Persistent'
-$NameGroup = 'GRP_AZURE_AVD'
+$NameGroup = 'informar caminho grupo'
 $Name_Aplication = $Name_hostpool + "-DAG"
 
 
