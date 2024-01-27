@@ -1,0 +1,909 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "nestedTemplatesLocation": {
+            "type": "string",
+            "metadata": {
+                "description": "The base URI where artifacts required by this template are located."
+            }
+        },
+        "artifactsLocation": {
+            "type": "string",
+            "metadata": {
+                "description": "The base URI where the Azure artifacts required by this template are located."
+            }
+        },
+        "hciArtifactsLocation": {
+            "type": "string",
+            "metadata": {
+                "description": "The base URI where the Azure Stack HCI artifacts required by this template are located."
+            },
+            "defaultValue": ""
+        },
+        "hostpoolName": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the Hostpool to be created."
+            }
+        },
+        "hostpoolToken": {
+            "type": "securestring",
+            "metadata": {
+                "description": "The token of the host pool where the session hosts will be added."
+            }
+        },
+        "hostpoolResourceGroup": {
+            "type": "string",
+            "metadata": {
+                "description": "The resource group of the host pool to be updated. Used when the host pool was created empty."
+            },
+            "defaultValue": ""
+        },
+        "hostpoolLocation": {
+            "type": "string",
+            "metadata": {
+                "description": "The location of the host pool to be updated. Used when the host pool was created empty."
+            },
+            "defaultValue": ""
+        },
+        "hostpoolProperties": {
+            "type": "object",
+            "metadata": {
+                "description": "The properties of the Hostpool to be updated. Used when the host pool was created empty."
+            },
+            "defaultValue": {}
+        },
+        "vmTemplate": {
+            "type": "string",
+            "metadata": {
+                "description": "The host pool VM template. Used when the host pool was created empty."
+            },
+            "defaultValue": ""
+        },
+        "administratorAccountUsername": {
+            "type": "string",
+            "metadata": {
+                "description": "A username in the domain that has privileges to join the session hosts to the domain. For example, 'vmjoiner@contoso.com'."
+            },
+            "defaultValue": ""
+        },
+        "administratorAccountPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "The password that corresponds to the existing domain username."
+            },
+            "defaultValue": ""
+        },
+        "vmAdministratorAccountUsername": {
+            "type": "string",
+            "metadata": {
+                "description": "A username to be used as the virtual machine administrator account. The vmAdministratorAccountUsername and  vmAdministratorAccountPassword parameters must both be provided. Otherwise, domain administrator credentials provided by administratorAccountUsername and administratorAccountPassword will be used."
+            },
+            "defaultValue": ""
+        },
+        "vmAdministratorAccountPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "The password associated with the virtual machine administrator account. The vmAdministratorAccountUsername and  vmAdministratorAccountPassword parameters must both be provided. Otherwise, domain administrator credentials provided by administratorAccountUsername and administratorAccountPassword will be used."
+            },
+            "defaultValue": ""
+        },
+        "availabilityOption": {
+            "type": "string",
+            "metadata": {
+                "description": "Select the availability options for the VMs."
+            },
+            "defaultValue": "None",
+            "allowedValues": [
+                "None",
+                "AvailabilitySet",
+                "AvailabilityZone"
+            ]
+        },
+        "availabilitySetName": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of avaiability set to be used when create the VMs."
+            },
+            "defaultValue": ""
+        },
+        "createAvailabilitySet": {
+            "type": "bool",
+            "metadata": {
+                "description": "Whether to create a new availability set for the VMs."
+            },
+            "defaultValue": false
+        },
+        "availabilitySetUpdateDomainCount": {
+            "type": "int",
+            "metadata": {
+                "description": "The platform update domain count of avaiability set to be created."
+            },
+            "defaultValue": 5,
+            "allowedValues": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20
+            ]
+        },
+        "availabilitySetFaultDomainCount": {
+            "type": "int",
+            "metadata": {
+                "description": "The platform fault domain count of avaiability set to be created."
+            },
+            "defaultValue": 2,
+            "allowedValues": [
+                1,
+                2,
+                3
+            ]
+        },
+        "availabilityZones": {
+            "type": "array",
+            "metadata": {
+                "description": "The availability zones to equally distribute VMs amongst"
+            },
+            "defaultValue": []
+        },
+        "vmResourceGroup": {
+            "type": "string",
+            "metadata": {
+                "description": "The resource group of the session host VMs."
+            }
+        },
+        "vmLocation": {
+            "type": "string",
+            "metadata": {
+                "description": "The location of the session host VMs."
+            }
+        },
+        "vmExtendedLocation": {
+            "type": "object",
+            "metadata": {
+                "description": "The EdgeZone extended location of the session host VMs."
+            },
+            "defaultValue": {}
+        },
+        "vmSize": {
+            "type": "string",
+            "metadata": {
+                "description": "The size of the session host VMs."
+            }
+        },
+        "vmDiskSizeGB": {
+            "type": "int",
+            "metadata": {
+                "description": "The size of the session host VMs in GB. If the value of this parameter is 0, the disk will be created with the default size set in the image."
+            },
+            "defaultValue": 0
+        },
+        "vmHibernate": {
+            "type": "bool",
+            "metadata": {
+                "description": "Whether the VMs created will be hibernate enabled"
+            },
+            "defaultValue": false
+        },
+        "vmInitialNumber": {
+            "type": "int",
+            "metadata": {
+                "description": "VM name prefix initial number."
+            }
+        },
+        "vmNumberOfInstances": {
+            "type": "int",
+            "metadata": {
+                "description": "Number of session hosts that will be created and added to the hostpool."
+            }
+        },
+        "vmNamePrefix": {
+            "type": "string",
+            "metadata": {
+                "description": "This prefix will be used in combination with the VM number to create the VM name. If using 'rdsh' as the prefix, VMs would be named 'rdsh-0', 'rdsh-1', etc. You should use a unique prefix to reduce name collisions in Active Directory."
+            }
+        },
+        "vmImageType": {
+            "type": "string",
+            "metadata": {
+                "description": "Select the image source for the session host vms. VMs from a Gallery image will be created with Managed Disks."
+            },
+            "defaultValue": "Gallery",
+            "allowedValues": [
+                "CustomImage",
+                "Gallery"
+            ]
+        },
+        "vmGalleryImageOffer": {
+            "type": "string",
+            "metadata": {
+                "description": "(Required when vmImageType = Gallery) Gallery image Offer."
+            },
+            "defaultValue": ""
+        },
+        "vmGalleryImagePublisher": {
+            "type": "string",
+            "metadata": {
+                "description": "(Required when vmImageType = Gallery) Gallery image Publisher."
+            },
+            "defaultValue": ""
+        },
+        "vmGalleryImageSKU": {
+            "type": "string",
+            "metadata": {
+                "description": "(Required when vmImageType = Gallery) Gallery image SKU."
+            },
+            "defaultValue": ""
+        },
+        "vmGalleryImageVersion": {
+            "type": "string",
+            "metadata": {
+                "description": "(Required when vmImageType = Gallery) Gallery image version."
+            },
+            "defaultValue": ""
+        },
+        "vmGalleryImageHasPlan": {
+            "type": "bool",
+            "metadata": {
+                "description": "Whether the VM has plan or not"
+            },
+            "defaultValue": false
+        },
+        "vmCustomImageSourceId": {
+            "type": "string",
+            "metadata": {
+                "description": "(Required when vmImageType = CustomImage) Resource ID of the image"
+            },
+            "defaultValue": ""
+        },
+        "vmDiskType": {
+            "type": "string",
+            "allowedValues": [
+                "UltraSSD_LRS",
+                "Premium_LRS",
+                "StandardSSD_LRS",
+                "Standard_LRS"
+            ],
+            "metadata": {
+                "description": "The VM disk type for the VM: HDD or SSD."
+            },
+            "defaultValue": "Standard_LRS"
+        },
+        "existingVnetName": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the virtual network the VMs will be connected to."
+            },
+            "defaultValue": ""
+        },
+        "existingSubnetName": {
+            "type": "string",
+            "metadata": {
+                "description": "The subnet the VMs will be placed in."
+            },
+            "defaultValue": ""
+        },
+        "virtualNetworkResourceGroupName": {
+            "type": "string",
+            "metadata": {
+                "description": "The resource group containing the existing virtual network."
+            },
+            "defaultValue": ""
+        },
+        "createNetworkSecurityGroup": {
+            "type": "bool",
+            "metadata": {
+                "description": "Whether to create a new network security group or use an existing one"
+            },
+            "defaultValue": false
+        },
+        "networkSecurityGroupId": {
+            "type": "string",
+            "metadata": {
+                "description": "The resource id of an existing network security group"
+            },
+            "defaultValue": ""
+        },
+        "networkSecurityGroupRules": {
+            "type": "array",
+            "metadata": {
+                "description": "The rules to be given to the new network security group"
+            },
+            "defaultValue": []
+        },
+        "availabilitySetTags": {
+            "type": "object",
+            "metadata": {
+                "description": "The tags to be assigned to the availability set"
+            },
+            "defaultValue": {}
+        },
+        "networkInterfaceTags": {
+            "type": "object",
+            "metadata": {
+                "description": "The tags to be assigned to the network interfaces"
+            },
+            "defaultValue": {}
+        },
+        "networkSecurityGroupTags": {
+            "type": "object",
+            "metadata": {
+                "description": "The tags to be assigned to the network security groups"
+            },
+            "defaultValue": {}
+        },
+        "virtualMachineTags": {
+            "type": "object",
+            "metadata": {
+                "description": "The tags to be assigned to the virtual machines"
+            },
+            "defaultValue": {}
+        },
+        "imageTags": {
+            "type": "object",
+            "metadata": {
+                "description": "The tags to be assigned to the images"
+            },
+            "defaultValue": {}
+        },
+        "deploymentId": {
+            "type": "string",
+            "metadata": {
+                "description": "GUID for the deployment"
+            },
+            "defaultValue": ""
+        },
+        "apiVersion": {
+            "type": "string",
+            "metadata": {
+                "description": "WVD api version"
+            },
+            "defaultValue": "2019-12-10-preview"
+        },
+        "ouPath": {
+            "type": "string",
+            "metadata": {
+                "description": "OUPath for the domain join"
+            },
+            "defaultValue": ""
+        },
+        "domain": {
+            "type": "string",
+            "metadata": {
+                "description": "Domain to join"
+            },
+            "defaultValue": ""
+        },
+        "aadJoin": {
+            "type": "bool",
+            "metadata": {
+                "description": "True if AAD Join, false if AD join"
+            },
+            "defaultValue": false
+        },
+        "intune": {
+            "type": "bool",
+            "metadata": {
+                "description": "True if intune enrollment is selected.  False otherwise"
+            },
+            "defaultValue": false
+        },
+        "bootDiagnostics": {
+            "type": "object",
+            "metadata": {
+                "description": "Boot diagnostics object taken as body of Diagnostics Profile in VM creation"
+            },
+            "defaultValue": {
+                "enabled": false
+            }
+        },
+        "userAssignedIdentity": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of user assigned identity that will assigned to the VMs. This is an optional parameter."
+            },
+            "defaultValue": ""
+        },
+        "customConfigurationScriptUrl": {
+            "type": "string",
+            "metadata": {
+                "description": "PowerShell script URL to be run after the Virtual Machines are created."
+            },
+            "defaultValue": ""
+        },
+        "systemData": {
+            "type": "object",
+            "metadata": {
+                "description": "System data is used for internal purposes, such as support preview features."
+            },
+            "defaultValue": {}
+        },
+        "securityType": {
+            "type": "string",
+            "metadata": {
+                "description": "Specifies the SecurityType of the virtual machine. It is set as TrustedLaunch to enable UefiSettings. Default: UefiSettings will not be enabled unless this property is set as TrustedLaunch."
+            },
+            "allowedValues": [
+                "Standard",
+                "TrustedLaunch",
+                "ConfidentialVM"
+            ],
+            "defaultValue": "Standard"
+        },
+        "secureBoot": {
+            "type": "bool",
+            "metadata": {
+                "description": "Specifies whether secure boot should be enabled on the virtual machine."
+            },
+            "defaultValue": false
+        },
+        "vTPM": {
+            "type": "bool",
+            "metadata": {
+                "description": "Specifies whether vTPM (Virtual Trusted Platform Module) should be enabled on the virtual machine."
+            },
+            "defaultValue": false
+        },
+        "managedDiskSecurityEncryptionType": {
+            "type": "string",
+            "defaultValue": "VMGuestStateOnly",
+            "allowedValues": [
+                "VMGuestStateOnly",
+                "DiskWithVMGuestState"
+            ],
+            "metadata": {
+                "description": "Managed disk security encryption type."
+            }
+        },
+        "integrityMonitoring": {
+            "type": "bool",
+            "metadata": {
+                "description": "Specifies whether integrity monitoring will be added to the virtual machine."
+            },
+            "defaultValue": false
+        },
+        "vmInfrastructureType": {
+            "type": "string",
+            "metadata": {
+                "description": "The infrastructure type for the virtual machines. Can be OnPremises or Cloud"
+            },
+            "allowedValues": [
+                "OnPremises",
+                "Cloud"
+            ],
+            "defaultValue": "Cloud"
+        },
+        "customLocationId": {
+            "type": "string",
+            "metadata": {
+                "description": "A deployment target created and customized by your organization for creating virtual machines. The custom location is associated to an Azure Stack HCI cluster. E.g., /subscriptions/<subscriptionID>/resourcegroups/Contoso-rg/providers/microsoft.extendedlocation/customlocations/Contoso-CL."
+            },
+            "defaultValue": ""
+        },
+        "hciImageId": {
+            "type": "string",
+            "metadata": {
+                "description": "Full ARM resource ID of the AzureStackHCI virtual machine image used for the VMs. E.g., /subscriptions/<subscriptionID>/resourceGroups/Contoso-rg/providers/microsoft.azurestackhci/marketplacegalleryimages/Contoso-Win11image."
+            },
+            "defaultValue": ""
+        },
+        "hciLogicalNetworkId": {
+            "type": "string",
+            "metadata": {
+                "description": "Full ARM resource ID of the AzureStackHCI virtual network used for the VMs. E.g., /subscriptions/<subscriptionID>/resourceGroups/Contoso-rg/providers/Microsoft.AzureStackHCI/virtualnetworks/Contoso-virtualnetwork."
+            },
+            "defaultValue": ""
+        },
+        "virtualProcessorCount": {
+            "type": "int",
+            "metadata": {
+                "description": "Virtual Processor Count. Default is 4."
+            },
+            "defaultValue": 4
+        },
+        "memoryMB": {
+            "type": "int",
+            "metadata": {
+                "description": "Memory in GB. Default is 8."
+            },
+            "defaultValue": 8
+        },
+        "maximumMemoryMB": {
+            "type": "int",
+            "metadata": {
+                "description": "This parameter is optional and only used if dynamicMemory = true. When using dynamic memory this setting is the maximum GB given to the VM."
+            },
+            "defaultValue": 0
+        },
+        "minimumMemoryMB": {
+            "type": "int",
+            "metadata": {
+                "description": "This parameter is optional and only used if dynamicMemory = true. When using dynamic memory this setting is the minimum GB given to the VM."
+            },
+            "defaultValue": 0
+        },
+        "dynamicMemoryConfig": {
+            "type": "bool",
+            "metadata": {
+                "description": "Dynamic memory for virtual machine from a range for amount of memory."
+            },
+            "defaultValue": false
+        },
+        "targetMemoryBuffer": {
+            "type": "int",
+            "metadata": {
+                "description": "This parameter is optional and only used if dynamicMemory = true. When using dynamic memory this setting is the buffer of extra memory given to the VM."
+            },
+            "defaultValue": 0
+        }
+    },
+    "variables": {
+        "rdshPrefix": "[concat(parameters('vmNamePrefix'),'-')]",
+        "vhds": "[concat('vhds','/', variables('rdshPrefix'))]",
+        "subnet-id": "[resourceId(parameters('virtualNetworkResourceGroupName'),'Microsoft.Network/virtualNetworks/subnets',parameters('existingVnetName'), parameters('existingSubnetName'))]",
+        "vmTemplateName": "[concat( 'managedDisks-', toLower(replace(parameters('vmImageType'),' ', '')), 'vm')]",
+        "vmTemplateUri": "[concat(parameters('nestedTemplatesLocation'), variables('vmTemplateName'),'.json')]",
+        "azureStackHciTemplateUri": "[concat(parameters('nestedTemplatesLocation'), 'azurestackhci-vm','.json')]",
+        "rdshVmNamesOutput": {
+            "copy": [
+                {
+                    "name": "rdshVmNamesCopy",
+                    "count": "[parameters('vmNumberOfInstances')]",
+                    "input": {
+                        "name": "[concat(variables('rdshPrefix'), add(parameters('vmInitialNumber'), copyIndex('rdshVmNamesCopy')))]"
+                    }
+                }
+            ]
+        }
+    },
+    "resources": [
+        {
+            "apiVersion": "2018-05-01",
+            "name": "[concat('UpdateHostPool-', parameters('deploymentId'))]",
+            "type": "Microsoft.Resources/deployments",
+            "resourceGroup": "[parameters('hostpoolResourceGroup')]",
+            "condition": "[not(empty(parameters('hostpoolResourceGroup')))]",
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "resources": [
+                        {
+                            "name": "[parameters('hostpoolName')]",
+                            "apiVersion": "[parameters('apiVersion')]",
+                            "location": "[parameters('hostpoolLocation')]",
+                            "type": "Microsoft.DesktopVirtualization/hostpools",
+                            "properties": "[parameters('hostpoolProperties')]"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "apiVersion": "2018-05-01",
+            "name": "[concat('AVSet-linkedTemplate-', parameters('deploymentId'))]",
+            "type": "Microsoft.Resources/deployments",
+            "resourceGroup": "[parameters('vmResourceGroup')]",
+            "condition": "[and(equals(parameters('availabilityOption'), 'AvailabilitySet'), parameters('createAvailabilitySet'))]",
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "resources": [
+                        {
+                            "apiVersion": "2018-10-01",
+                            "type": "Microsoft.Compute/availabilitySets",
+                            "name": "[parameters('availabilitySetName')]",
+                            "location": "[parameters('vmLocation')]",
+                            "tags": "[parameters('availabilitySetTags')]",
+                            "properties": {
+                                "platformUpdateDomainCount": "[parameters('availabilitySetUpdateDomainCount')]",
+                                "platformFaultDomainCount": "[parameters('availabilitySetFaultDomainCount')]"
+                            },
+                            "sku": {
+                                "name": "Aligned"
+                            }
+                        }
+                    ]
+                }
+            },
+            "dependsOn": [
+                "[concat('UpdateHostPool-', parameters('deploymentId'))]"
+            ]
+        },
+        {
+            "apiVersion": "2018-05-01",
+            "name": "[concat('vmCreation-linkedTemplate-', parameters('deploymentId'))]",
+            "resourceGroup": "[parameters('vmResourceGroup')]",
+            "condition": "[equals(parameters('vmInfrastructureType'), 'Cloud')]",
+            "dependsOn": [
+                "[concat('AVSet-linkedTemplate-', parameters('deploymentId'))]"
+            ],
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('vmTemplateUri')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "artifactsLocation": {
+                        "value": "[parameters('artifactsLocation')]"
+                    },
+                    "availabilityOption": {
+                        "value": "[parameters('availabilityOption')]"
+                    },
+                    "availabilitySetName": {
+                        "value": "[parameters('availabilitySetName')]"
+                    },
+                    "availabilityZones": {
+                        "value": "[parameters('availabilityZones')]"
+                    },
+                    "vmGalleryImageOffer": {
+                        "value": "[parameters('vmGalleryImageOffer')]"
+                    },
+                    "vmGalleryImagePublisher": {
+                        "value": "[parameters('vmGalleryImagePublisher')]"
+                    },
+                    "vmGalleryImageHasPlan": {
+                        "value": "[parameters('vmGalleryImageHasPlan')]"
+                    },
+                    "vmGalleryImageSKU": {
+                        "value": "[parameters('vmGalleryImageSKU')]"
+                    },
+                    "vmGalleryImageVersion": {
+                        "value": "[parameters('vmGalleryImageVersion')]"
+                    },
+                    "rdshPrefix": {
+                        "value": "[variables('rdshPrefix')]"
+                    },
+                    "rdshNumberOfInstances": {
+                        "value": "[parameters('vmNumberOfInstances')]"
+                    },
+                    "rdshVMDiskType": {
+                        "value": "[parameters('vmDiskType')]"
+                    },
+                    "rdshVmSize": {
+                        "value": "[parameters('vmSize')]"
+                    },
+                    "rdshVmDiskSizeGB": {
+                        "value": "[parameters('vmDiskSizeGB')]"
+                    },
+                    "rdshHibernate": {
+                        "value": "[parameters('vmHibernate')]"
+                    },
+                    "enableAcceleratedNetworking": {
+                        "value": false
+                    },
+                    "vmAdministratorAccountUsername": {
+                        "value": "[parameters('vmAdministratorAccountUsername')]"
+                    },
+                    "vmAdministratorAccountPassword": {
+                        "value": "[parameters('vmAdministratorAccountPassword')]"
+                    },
+                    "administratorAccountUsername": {
+                        "value": "[parameters('administratorAccountUsername')]"
+                    },
+                    "administratorAccountPassword": {
+                        "value": "[parameters('administratorAccountPassword')]"
+                    },
+                    "subnet-id": {
+                        "value": "[variables('subnet-id')]"
+                    },
+                    "vhds": {
+                        "value": "[variables('vhds')]"
+                    },
+                    "rdshImageSourceId": {
+                        "value": "[parameters('vmCustomImageSourceId')]"
+                    },
+                    "location": {
+                        "value": "[parameters('vmLocation')]"
+                    },
+                    "extendedLocation": {
+                        "value": "[parameters('vmExtendedLocation')]"
+                    },
+                    "createNetworkSecurityGroup": {
+                        "value": "[parameters('createNetworkSecurityGroup')]"
+                    },
+                    "networkSecurityGroupId": {
+                        "value": "[parameters('networkSecurityGroupId')]"
+                    },
+                    "networkSecurityGroupRules": {
+                        "value": "[parameters('networkSecurityGroupRules')]"
+                    },
+                    "networkInterfaceTags": {
+                        "value": "[parameters('networkInterfaceTags')]"
+                    },
+                    "networkSecurityGroupTags": {
+                        "value": "[parameters('networkSecurityGroupTags')]"
+                    },
+                    "virtualMachineTags": {
+                        "value": "[parameters('virtualMachineTags')]"
+                    },
+                    "imageTags": {
+                        "value": "[parameters('imageTags')]"
+                    },
+                    "vmInitialNumber": {
+                        "value": "[parameters('vmInitialNumber')]"
+                    },
+                    "hostpoolName": {
+                        "value": "[parameters('hostpoolName')]"
+                    },
+                    "hostpoolToken": {
+                        "value": "[parameters('hostpoolToken')]"
+                    },
+                    "domain": {
+                        "value": "[parameters('domain')]"
+                    },
+                    "ouPath": {
+                        "value": "[parameters('ouPath')]"
+                    },
+                    "aadJoin": {
+                        "value": "[parameters('aadJoin')]"
+                    },
+                    "intune": {
+                        "value": "[parameters('intune')]"
+                    },
+                    "bootDiagnostics": {
+                        "value": "[parameters('bootDiagnostics')]"
+                    },
+                    "_guidValue": {
+                        "value": "[parameters('deploymentId')]"
+                    },
+                    "userAssignedIdentity": {
+                        "value": "[parameters('userAssignedIdentity')]"
+                    },
+                    "customConfigurationScriptUrl": {
+                        "value": "[parameters('customConfigurationScriptUrl')]"
+                    },
+                    "systemData": {
+                        "value": "[parameters('systemData')]"
+                    },
+                    "securityType": {
+                        "value": "[parameters('securityType')]"
+                    },
+                    "secureBoot": {
+                        "value": "[parameters('secureBoot')]"
+                    },
+                    "vTPM": {
+                        "value": "[parameters('vTPM')]"
+                    },
+                    "managedDiskSecurityEncryptionType": {
+                        "value": "[parameters('managedDiskSecurityEncryptionType')]"
+                    },
+                    "integrityMonitoring": {
+                        "value": "[parameters('integrityMonitoring')]"
+                    }
+                }
+            }
+        },
+        {
+            "apiVersion": "2019-05-01",
+            "name": "[concat('hci-addVms-linkedTemplate-', parameters('deploymentId'))]",
+            "condition": "[equals(parameters('vmInfrastructureType'), 'OnPremises')]",
+            "type": "Microsoft.Resources/deployments",
+            "resourceGroup": "[parameters('vmResourceGroup')]",
+            "dependsOn": [
+                "[concat('AVSet-linkedTemplate-', parameters('deploymentId'))]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('azureStackHciTemplateUri')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "rdshPrefix": {
+                        "value": "[variables('rdshPrefix')]"
+                    },
+                    "rdshNumberOfInstances": {
+                        "value": "[parameters('vmNumberOfInstances')]"
+                    },
+                    "vmInitialNumber": {
+                        "value": "[parameters('vmInitialNumber')]"
+                    },
+                    "vmAdministratorAccountUsername": {
+                        "value": "[parameters('vmAdministratorAccountUsername')]"
+                    },
+                    "vmAdministratorAccountPassword": {
+                        "value": "[parameters('vmAdministratorAccountPassword')]"
+                    },
+                    "domainAdministratorUsername": {
+                        "value": "[parameters('administratorAccountUsername')]"
+                    },
+                    "domainAdministratorPassword": {
+                        "value": "[parameters('administratorAccountPassword')]"
+                    },
+                    "customLocationId": {
+                        "value": "[parameters('customLocationId')]"
+                    },
+                    "virtualProcessorCount": {
+                        "value": "[parameters('virtualProcessorCount')]"
+                    },
+                    "memoryMB": {
+                        "value": "[parameters('memoryMB')]"
+                    },
+                    "maximumMemoryMB": {
+                        "value": "[parameters('maximumMemoryMB')]"
+                    },
+                    "minimumMemoryMB": {
+                        "value": "[parameters('minimumMemoryMB')]"
+                    },
+                    "dynamicMemoryConfig": {
+                        "value": "[parameters('dynamicMemoryConfig')]"
+                    },
+                    "targetMemoryBuffer": {
+                        "value": "[parameters('targetMemoryBuffer')]"
+                    },
+                    "logicalNetworkId": {
+                        "value": "[parameters('hciLogicalNetworkId')]"
+                    },
+                    "imageId": {
+                        "value": "[parameters('hciImageId')]"
+                    },
+                    "location": {
+                        "value": "[parameters('vmLocation')]"
+                    },
+                    "networkInterfaceTags": {
+                        "value": "[parameters('networkInterfaceTags')]"
+                    },
+                    "virtualMachineTags": {
+                        "value": "[parameters('virtualMachineTags')]"
+                    },
+                    "hostpoolToken": {
+                        "value": "[parameters('hostpoolToken')]"
+                    },
+                    "hostpoolName": {
+                        "value": "[parameters('hostpoolName')]"
+                    },
+                    "domain": {
+                        "value": "[parameters('domain')]"
+                    },
+                    "oUPath": {
+                        "value": "[parameters('oUPath')]"
+                    },
+                    "aadJoin": {
+                        "value": "[parameters('aadJoin')]"
+                    },
+                    "intune": {
+                        "value": "[parameters('intune')]"
+                    },
+                    "fileUri": {
+                        "value": "[parameters('hciArtifactsLocation')]"
+                    },
+                    "configurationZipUri": {
+                        "value": "[parameters('artifactsLocation')]"
+                    },
+                    "systemData": {
+                        "value": "[parameters('systemData')]"
+                    }
+                }
+            }
+        }
+    ],
+    "outputs": {
+        "rdshVmNamesObject": {
+            "value": "[variables('rdshVmNamesOutput')]",
+            "type": "object"
+        }
+    }
+}
