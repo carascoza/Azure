@@ -26,6 +26,8 @@ $ExportFilePath ="CAMINHO\"
 $remove_vms = $ExportFilePath + "remover_vms.csv"
 $vms_Csv = Import-Csv $remove_vms -Delimiter ';'
 
+
+// TODO: incluir logica de token azure
 #conectar na azure tenant Bradesco
 Connect-AzAccount
 #Set-AzContext -Subscription ""
