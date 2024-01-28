@@ -17,8 +17,8 @@ Links: https://askaresh.com/2022/12/13/azure-virtual-desktop-powershell-create-a
 #variaveis
 $LogTime = Get-Date -Format "dd-MM-yyyy;hh:mm:ss"
 $Time = Get-Date -Format "MM-dd-yyyy"
-$LogFile  = "<caminho>" \criar_hostpool_ + $Time + ".log"
-$LogFile_error  = "<caminho>" \Logs\error_ + $Time + ".log"
+$LogFile  = "<caminho\criar_hostpool_>" + $Time + ".log"
+$LogFile_error  = "<caminho\Logs\error_>" + $Time + ".log"
 $ExportFilePath = "<caminho>"
 $token_azure = $null
 $REStoken_azure = $null
