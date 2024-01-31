@@ -1,0 +1,269 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "nestedTemplatesLocation": {
+      "value": "https://raw.githubusercontent.com/Azure/RDS-Templates/master/ARM-wvd-templates/nestedtemplates/"
+    },
+    "artifactsLocation": {
+      "value": "https://raw.githubusercontent.com/Azure/RDS-Templates/master/ARM-wvd-templates/DSC/Configuration.zip"
+    },
+    "hostpoolName": {
+      "value": "AVD-EUS2-PRD-T"
+    },
+    "hostpoolFriendlyName": {
+      "value": null
+    },
+    "hostpoolDescription": {
+      "value": null
+    },
+    "hostpoolDiagnosticSettingsStorageAccount": {
+      "value": null
+    },
+    "hostpoolDiagnosticSettingsLogAnalyticsWorkspaceId": {
+      "value": null
+    },
+    "hostpoolDiagnosticSettingsEventHubName": {
+      "value": null
+    },
+    "hostpoolDiagnosticSettingsEventHubAuthorizationId": {
+      "value": null
+    },
+    "hostpoolDiagnosticSettingsLogCategories": {
+      "value": [
+        "Checkpoint",
+        "Error",
+        "Management",
+        "Connection",
+        "HostRegistration",
+        "AgentHealthStatus",
+        "NetworkData",
+        "SessionHostManagement"
+      ]
+    },
+    "appGroupDiagnosticSettingsLogCategories": {
+      "value": [
+        "Checkpoint",
+        "Error",
+        "Management"
+      ]
+    },
+    "workspaceDiagnosticSettingsLogCategories": {
+      "value": [
+        "Checkpoint",
+        "Error",
+        "Management",
+        "Feed"
+      ]
+    },
+    "location": {
+      "value": "eastus2"
+    },
+    "workSpaceName": {
+      "value": null
+    },
+    "workspaceLocation": {
+      "value": null
+    },
+    "workspaceResourceGroup": {
+      "value": null
+    },
+    "isNewWorkspace": {
+      "value": null
+    },
+    "allApplicationGroupReferences": {
+      "value": null
+    },
+    "addToWorkspace": {
+      "value": false
+    },
+    "administratorAccountUsername": {
+      "value": "admin@mac-lab01.ml"
+    },
+    "administratorAccountPassword": {
+      "value": "Macmac!13"
+    },
+    "vmAdministratorAccountUsername": {
+      "value": "helpdesk"
+    },
+    "vmAdministratorAccountPassword": {
+      "value": "Macmac!131313"
+    },
+    "availabilityOption": {
+      "value": "None"
+    },
+    "availabilitySetName": {
+      "value": null
+    },
+    "createAvailabilitySet": {
+      "value": null
+    },
+    "availabilitySetUpdateDomainCount": {
+      "value": 5
+    },
+    "availabilitySetFaultDomainCount": {
+      "value": 2
+    },
+    "availabilityZones": {
+      "value": []
+    },
+    "vmResourceGroup": {
+      "value": "AVD-EUS2-PRD-T"
+    },
+    "vmLocation": {
+      "value": "eastus2"
+    },
+    "vmEdgeZone": {
+      "value": null
+    },
+    "vmSize": {
+      "value": "Standard_B2s"
+    },
+    "vmDiskSizeGB": {
+      "value": null
+    },
+    "vmHibernate": {
+      "value": null
+    },
+    "vmNumberOfInstances": {
+      "value": 1
+    },
+    "vmNamePrefix": {
+      "value": "vmavd0"
+    },
+    "vmImageType": {
+      "value": "CustomImage"
+    },
+    "vmGalleryImageOffer": {
+      "value": null
+    },
+    "vmGalleryImagePublisher": {
+      "value": null
+    },
+    "vmGalleryImageHasPlan": {
+      "value": null
+    },
+    "vmGalleryImageSKU": {
+      "value": null
+    },
+    "vmGalleryImageVersion": {
+      "value": null
+    },
+    "vmCustomImageSourceId": {
+      "value": "/subscriptions/b3e78373-d280-4a8b-acd9-90118435ea62/resourceGroups/rg-template-avd/providers/Microsoft.Compute/images/Win11-template-avd-01"
+    },
+    "vmDiskType": {
+      "value": "StandardSSD_LRS"
+    },
+    "existingVnetName": {
+      "value": "vnet-prd-US"
+    },
+    "existingSubnetName": {
+      "value": "vnet-prd-us"
+    },
+    "virtualNetworkResourceGroupName": {
+      "value": "vnet-prd"
+    },
+    "createNetworkSecurityGroup": {
+      "value": null
+    },
+    "networkSecurityGroupId": {
+      "value": null
+    },
+    "networkSecurityGroupRules": {
+      "value": []
+    },
+    "hostpoolType": {
+      "value": "Personal"
+    },
+    "personalDesktopAssignmentType": {
+      "value": "Automatic"
+    },
+    "maxSessionLimit": {
+      "value": 99999
+    },
+    "loadBalancerType": {
+      "value": "BreadthFirst"
+    },
+    "customRdpProperty": {
+      "value": null
+    },
+    "vmTemplate": {
+      "value": null
+    },
+    "tokenExpirationTime": {
+      "value": "2024-02-01T13:18:52.5928242Z"
+    },
+    "hostpoolTags": {
+      "value": {}
+    },
+    "applicationGroupTags": {
+      "value": {}
+    },
+    "availabilitySetTags": {
+      "value": {}
+    },
+    "networkInterfaceTags": {
+      "value": {}
+    },
+    "networkSecurityGroupTags": {
+      "value": {}
+    },
+    "virtualMachineTags": {
+      "value": {}
+    },
+    "imageTags": {
+      "value": {}
+    },
+    "apiVersion": {
+      "value": "2019-12-10-preview"
+    },
+    "deploymentId": {
+      "value": null
+    },
+    "validationEnvironment": {
+      "value": null
+    },
+    "preferredAppGroupType": {
+      "value": "Desktop"
+    },
+    "ouPath": {
+      "value": "OU=Personal,OU=AVD,OU=Computadores,DC=mac-lab01,DC=ml"
+    },
+    "domain": {
+      "value": "mac-lab01.ml"
+    },
+    "aadJoin": {
+      "value": null
+    },
+    "intune": {
+      "value": null
+    },
+    "bootDiagnostics": {
+      "value": {
+        "enabled": false
+      }
+    },
+    "userAssignedIdentity": {
+      "value": null
+    },
+    "customConfigurationTemplateUrl": {
+      "value": null
+    },
+    "customConfigurationParameterUrl": {
+      "value": null
+    },
+    "systemData": {
+      "value": {}
+    },
+    "securityType": {
+      "value": null
+    },
+    "secureBoot": {
+      "value": null
+    },
+    "vTPM": {
+      "value": null
+    }
+  }
+}
