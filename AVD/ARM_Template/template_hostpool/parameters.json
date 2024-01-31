@@ -162,19 +162,19 @@
             "value": false
         },
         "administratorAccountUsername": {
-            "value": "admin@mac-lab01.ml"
+            "value": null
         },
         "administratorAccountPassword": {
             "value": null
         },
         "domain": {
-            "value": "mac-lab01.ml"
+            "value": null
         },
         "ouPath": {
-            "value": "OU=Personal,OU=AVD,OU=Computadores,DC=mac-lab01,DC=ml"
+            "value": null
         },
         "vmAdministratorAccountUsername": {
-            "value": "helpdesk"
+            "value": null
         },
         "vmAdministratorAccountPassword": {
             "value": null
