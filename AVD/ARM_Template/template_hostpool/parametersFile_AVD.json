@@ -81,13 +81,13 @@
       "value": "admin@mac-lab01.ml"
     },
     "administratorAccountPassword": {
-      "value": "Macmac!13"
+      "value": ""
     },
     "vmAdministratorAccountUsername": {
       "value": "helpdesk"
     },
     "vmAdministratorAccountPassword": {
-      "value": "Macmac!131313"
+      "value": ""
     },
     "availabilityOption": {
       "value": "None"
@@ -150,7 +150,7 @@
       "value": null
     },
     "vmCustomImageSourceId": {
-      "value": "/subscriptions/b3e78373-d280-4a8b-acd9-90118435ea62/resourceGroups/rg-template-avd/providers/Microsoft.Compute/images/Win11-template-avd-01"
+      "value": ""
     },
     "vmDiskType": {
       "value": "StandardSSD_LRS"
