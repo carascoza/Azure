@@ -58,11 +58,6 @@ $vmNamePrefix = "vmavd0"
 $vmSize = "Standard_B2s"
 # Size Disco VM Padrao "StandardSSD_LRS"
 $vmDiskType = "StandardSSD_LRS"
-# Consultar token HostPool
-$hostpoolToken = Get-AzWvdRegistrationInfo -HostPoolName $hostpoolName -ResourceGroupName $hostpoolResourceGroup
-# Consultar propriedades HostPool
-$Get_hostpool = Get-AzWvdHostPool -Name $hostpoolName -ResourceGroupName $hostpoolResourceGroup
-#$Get_hostpool | Format-List *
 
 # Formato de hora token
 $ExpirationTime = $((get-date).ToUniversalTime().AddDays(1).ToString('yyyy-MM-ddTHH:mm:ss.fffffffZ'))
@@ -149,6 +144,12 @@ $token_azure = $null
 cls
 }
 }
+
+# Consultar token HostPool
+$hostpoolToken = Get-AzWvdRegistrationInfo -HostPoolName $hostpoolName -ResourceGroupName 
+# Consultar propriedades HostPool
+$Get_hostpool = Get-AzWvdHostPool -Name $hostpoolName -ResourceGroupName $hostpoolResourceGroup
+#$Get_hostpool | Format-List *
 
 # Validar Token HostPool
 if ($hostpoolToken.Token -eq $null ){
