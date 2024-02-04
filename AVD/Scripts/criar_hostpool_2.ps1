@@ -13,10 +13,8 @@ Links: https://askaresh.com/2022/12/13/azure-virtual-desktop-powershell-create-a
 "@
 
 # Variaveis
-$logTime = ""
-#$ExportFilePath = "<caminho>"
-#$avd_hostpool = $ExportFilePath + "report_avd_hostpool.csv"
-#$avd_vms = $ExportFilePath + "report_avd_vm.csv"
+$LogTime = Get-Date -Format "dd-MM-yyyy_hh-mm-ss"
+$LogFile  = "<informar caminho>\remover_vms_" + $Time + ".log"
 $token_azure = $null
 $REStoken_azure = $null
 

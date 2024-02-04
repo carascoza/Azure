@@ -12,12 +12,14 @@ Date_modified: 17/01/2024
 "@
 
 # Variaveis
-$logTime = ""
+$LogTime = Get-Date -Format "dd-MM-yyyy_hh-mm-ss"
+$LogFile  = "<informar caminho>\remover_vms_" + $Time + ".log"
 $ExportFilePath = "C:\Users\caras\Documents\Cloud\Azure\AVD\"
 $avd_hostpool = $ExportFilePath + "report_avd_hostpool.csv"
 $avd_vms = $ExportFilePath + "report_avd_vm.csv"
 $token_azure = $null
 $REStoken_azure = $null
+$SubscriptionId = "<nome Subscription>"
 
 #Verificar token azure
 while ($token_azure  -eq $null ){
