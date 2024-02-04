@@ -27,6 +27,8 @@ $remove_vms = $ExportFilePath + "remover_vms.csv"
 $vms_Csv = Import-Csv $remove_vms -Delimiter ';'
 $subscript = "<informar>"
 $TenantID = "<informar>"
+$token_azure = $null
+$REStoken_azure = $null
 
 #Verificar token azure
 while ($token_azure  -eq $null ){

@@ -16,7 +16,8 @@ $logTime = ""
 $ExportFilePath = "C:\Users\caras\Documents\Cloud\Azure\AVD\"
 $avd_hostpool = $ExportFilePath + "report_avd_hostpool.csv"
 $avd_vms = $ExportFilePath + "report_avd_vm.csv"
-
+$token_azure = $null
+$REStoken_azure = $null
 
 #Verificar token azure
 while ($token_azure  -eq $null ){

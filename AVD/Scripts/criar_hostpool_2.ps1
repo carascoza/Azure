@@ -17,7 +17,8 @@ $logTime = ""
 #$ExportFilePath = "<caminho>"
 #$avd_hostpool = $ExportFilePath + "report_avd_hostpool.csv"
 #$avd_vms = $ExportFilePath + "report_avd_vm.csv"
-
+$token_azure = $null
+$REStoken_azure = $null
 
 # Connect to the Azure Subcription
 Connect-AzAccount

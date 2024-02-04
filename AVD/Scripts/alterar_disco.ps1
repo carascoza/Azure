@@ -25,6 +25,8 @@ $LogFile  = "CAMINHO\remover_vms_" + $Time + ".log"
 $ExportFilePath ="CAMINHO\"
 $remove_vms = $ExportFilePath + "remover_vms.csv"
 $vms_Csv = Import-Csv $remove_vms -Delimiter ';'
+$token_azure = $null
+$REStoken_azure = $null
 
 
 #Cria arquivo log
