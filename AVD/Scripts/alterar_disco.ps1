@@ -27,10 +27,82 @@ $remove_vms = $ExportFilePath + "remover_vms.csv"
 $vms_Csv = Import-Csv $remove_vms -Delimiter ';'
 
 
-// TODO: incluir logica de token azure
-#conectar na azure tenant Bradesco
+#Cria arquivo log
+"Titulo;Data;Hora" | Out-File $LogFile -Append -Force
+"Inicio;" + $LogTime | Out-File $LogFile -Append -Force
+ 
+#Verificar token azure
+while ($token_azure  -eq $null ){
+$REStoken_azure  = Read-Host "
+ 
+============================= Script SUPORTE-VDI =============================
+ 
+Digite 1 para validar Token azure 
+Digite 2 para executar se ja validou o token azure
+ 
+Valor: 
+==============================================================================
+"  
+ 
+if ($REStoken_azure -eq "1" ){
+$token_azure = "1"
+ 
+Try
+{ 
+ 
+#conectar na azure tenant
+"Conctar na azure;" + $LogTime | Out-File $LogFile -Append -Force
 Connect-AzAccount
-#Set-AzContext -Subscription ""
+#Set-AzContext -Subscription $subscriptionId
+ 
+}
+ 
+Catch{
+ 
+$ErrorMessage = $_.Exception.Message
+    "Error Concetar na azure;" +$ErrorMessage | Out-File $LogFile -Append -Force
+   Write-Host -BackgroundColor red -ForegroundColor Black -Object $ErrorMessage
+   exit
+}
+ 
+}
+if ($REStoken_azure -eq "2" ){
+$token_azure = "2"
+ 
+Try
+{ 
+ 
+# mantem token da azure
+function GetAuthToken($resource) {
+    $context = [Microsoft.Azure.Commands.Common.Authentication.Abstractions.AzureRmProfileProvider]::Instance.Profile.DefaultContext
+    $Token = [Microsoft.Azure.Commands.Common.Authentication.AzureSession]::Instance.AuthenticationFactory.Authenticate($context.Account, $context.Environment, $context.Tenant.Id.ToString(), $null, [Microsoft.Azure.Commands.Common.Authentication.ShowDialog]::Never, $null, $resource).AccessToken
+    $authHeader = @{
+        'Content-Type' = 'application/json'
+        Authorization  = 'Bearer ' + $Token
+    }
+    return $authHeader
+}
+$token = GetAuthToken -resource https://management.azure.com
+#Log
+"Mantem token da azure;" + $LogTime | Out-File $LogFile -Append -Force
+}
+ 
+Catch{
+ 
+$ErrorMessage = $_.Exception.Message
+    "Error manter conectado na azure;" +$ErrorMessage | Out-File $LogFile -Append -Force
+   Write-Host -BackgroundColor red -ForegroundColor Black -Object $ErrorMessage
+   exit
+}
+ 
+}
+ 
+if ($REStoken_azure -ne "1" -and $REStoken_azure -ne "2" ){
+$token_azure = $null
+cls
+}
+}
+ 
 
 ##listar vms forma 1
 
