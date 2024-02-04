@@ -54,7 +54,7 @@ $tags_avd_projeto_avd = "empresa"
 # Tag avd empresa
 $tags_avd_empresa_avd = "empresa"
  
-# Tags Alterar as tags "departamento", "centro_de_custo", ("empresa" = banco_bradesco_sa ou bradesco_seguros_sa)
+# Tags Alterar as tags "departamento", "centro_de_custo"
 $tags_avd = @{
                "ambiente" = "prd"; `
                "departamento" = "TI"; `
@@ -103,7 +103,7 @@ $token_azure = "1"
 Try
 { 
  
-#conectar na azure tenant Bradesco
+#conectar na azure tenant 
 "Conctar na azure;" + $LogTime | Out-File $LogFile -Append -Force
 Connect-AzAccount
 #Set-AzContext -Subscription $subscriptionId

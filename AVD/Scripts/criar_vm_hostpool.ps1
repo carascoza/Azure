@@ -91,7 +91,7 @@ Try
 { 
 
 
-#conectar na azure tenant Bradesco
+#conectar na azure tenant
 "Conctar na azure;" + $LogTime | Out-File $LogFile -Append -Force
 Connect-AzAccount
 #Set-AzContext -Subscription $subscriptionId
