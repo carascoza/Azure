@@ -6,7 +6,7 @@ Description:   ALTERAR DISCO VM AZURE
 Usage:         .\alterar_disco.ps1
 version:       V1.0
 Date_create:   17/01/2024
-Date_modified: 17/01/2024
+Date_modified: 11/02/2024
 ===============================================================================
 link: https://learn.microsoft.com/pt-br/azure/virtual-machines/disks-convert-types?tabs=azure-powershell
 "@
@@ -22,15 +22,17 @@ Write-Host -BackgroundColor yellow -ForegroundColor Black -Object "Necessario in
 $LogTime = Get-Date -Format "dd-MM-yyyy_hh-mm-ss"
 $Time = Get-Date -Format "MM-dd-yyyy"
 $LogFile  = "CAMINHO\remover_vms_" + $Time + ".log"
-$ExportFilePath ="CAMINHO\"
+$subscriptionId = "<subscriptionid>"
+# Choose between Standard_LRS, StandardSSD_LRS, StandardSSD_ZRS, Premium_ZRS, and Premium_LRS based on your scenario
+$storageType = 'Standard_LRS'
 $token_azure = $null
 $REStoken_azure = $null
-
 
 #Cria arquivo log
 "Titulo;Data;Hora" | Out-File $LogFile -Append -Force
 "Inicio;" + $LogTime | Out-File $LogFile -Append -Force
  
+// TODO: Verificar o token da azure criar novo modulo
 #Verificar token azure
 while ($token_azure  -eq $null ){
 $REStoken_azure  = Read-Host "
@@ -50,10 +52,10 @@ $token_azure = "1"
 Try
 { 
  
-#conectar na azure tenant
+#conectar na azure tenant 
 "Conctar na azure;" + $LogTime | Out-File $LogFile -Append -Force
 Connect-AzAccount
-#Set-AzContext -Subscription $subscriptionId
+Set-AzContext -Subscription $subscriptionId
  
 }
  
@@ -111,22 +113,24 @@ $total_vms = Get-AzResource -ResourceType "Microsoft.Compute/virtualMachines" | 
 
 foreach ($vms in $total_vms){
 
-#propriedades hardware vms
+#propriedades hardware vms 
 $vmConfig = Get-AzVM -ResourceGroupName $vms.ResourceGroupName -Name $vms.ResourceName
+# Status da vm ($vmstatus.Statuses.code[1] -eq "PowerState/deallocated" )
+$vmstatus = Get-AzVM -ResourceGroupName $vms.ResourceGroupName -Name $vms.ResourceName -Status
+#nome da vm
+$namevm = $vms.ResourceName
 
 #vm name
-$vms.ResourceName
+#$vms.ResourceName
 
 # tipo de hardware
-$vmConfig.HardwareProfile.VmSize
+#$vmConfig.HardwareProfile.VmSize
 
 #nome disco
-$vmConfig.StorageProfile.OsDisk.Name 
-
-$vmConfig.StorageProfile.OsDisk.DiskSizeGB
+#$vmConfig.StorageProfile.OsDisk.Name 
 
 #imagem referencia
-$vmConfig.StorageProfile.ImageReference
+#$vmConfig.StorageProfile.ImageReference
 
 Try
 { 
@@ -134,38 +138,64 @@ Try
 $diskName = $vmConfig.StorageProfile.OsDisk.Name 
 # resource group that contains the managed disk
 $rgName = $vms.ResourceGroupName
-# Choose between Standard_LRS, StandardSSD_LRS, StandardSSD_ZRS, Premium_ZRS, and Premium_LRS based on your scenario
-$storageType = 'Standard_LRS'
 # Premium capable size 
 $size = $vmConfig.HardwareProfile.VmSize
 
+# Listar tipo do disco
 $disk = Get-AzDisk -DiskName $diskName -ResourceGroupName $rgName
+
+# type disco 'Standard_LRS'
+#$disk.Sku.Name
 
 # Get parent VM resource
 $vmResource = Get-AzResource -ResourceId $disk.ManagedBy
 
+#verifica status vm
+if ($vmstatus.Statuses.code[1] -eq "PowerState/deallocated" ){
+
+Write-Host -BackgroundColor green -ForegroundColor Black -Object "VM: $namevm Desligada "
+
+
+}else{
+
+Write-Host -BackgroundColor yellow -ForegroundColor Black -Object "VM: $namevm Ligada, desligando... "
+
 # Stop and deallocate the VM before changing the storage type
 Stop-AzVM -ResourceGroupName $vms.ResourceGroupName -Name $vms.ResourceName -Force
+
+}
+
 
 $vm = Get-AzVM -ResourceGroupName $vms.ResourceGroupName -Name $vms.ResourceName
 
 # Change the VM size to a size that supports Premium storage
 # Skip this step if converting storage from Premium to Standard
 $vm.HardwareProfile.VmSize = $size
-Update-AzVM -VM $vm -ResourceGroupName $rgName
+#Update-AzVM -VM $vm -ResourceGroupName $rgName
 
+
+if ($disk.Sku.Name -eq $storageType ){
+
+Write-Host -BackgroundColor green -ForegroundColor Black -Object "VM: $namevm ja possui o disco type: $storageType "
+
+
+}else{
+
+Write-Host -BackgroundColor yellow -ForegroundColor Black -Object "Alterando disco da VM: $namevm para type: $storageType "
 # Update the storage type
 $disk.Sku = [Microsoft.Azure.Management.Compute.Models.DiskSku]::new($storageType)
 $disk | Update-AzDisk
 
-#Start-AzVM -ResourceGroupName $vm.ResourceGroupName -Name $vm.Name
+}
 
+
+#Start-AzVM -ResourceGroupName $vm.ResourceGroupName -Name $vm.Name
 }
 
 Catch{
 
 $ErrorMessage = $_.Exception.Message
-    $vms.vms + ";" +$ErrorMessage | Out-File $LogFile -Append -Force
+    $namevm + ";" +$ErrorMessage | Out-File $LogFile -Append -Force
     Write-Host -BackgroundColor red -ForegroundColor Black -Object $ErrorMessage
 }
 }
