@@ -15,11 +15,11 @@ links: https://learn.microsoft.com/pt-br/azure/key-vault/certificates/quick-crea
 #variaveis
 $LogTime = Get-Date -Format "dd-MM-yyyy;hh:mm:ss"
 $Time = Get-Date -Format "MM-dd-yyyy"
-$LogFile  = "<caminho\criar_hostpool_>" + $Time + ".log"
-$LogFile_error  = "<caminho\Logs\error_>" + $Time + ".log"
+$LogFile = "<caminho\criar_hostpool_>" + $Time + ".log"
+$LogFile_error = "<caminho\Logs\error_>" + $Time + ".log"
 $ExportFilePath = "<caminho>"
 $location = '<location>'
-$resourceGroupName= '<resource_group>'
+$resourceGroupName = '<resource_group>'
 
 # Conectar na azure
 az login

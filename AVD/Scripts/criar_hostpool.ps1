@@ -17,8 +17,8 @@ Links: https://askaresh.com/2022/12/13/azure-virtual-desktop-powershell-create-a
 #variaveis
 $LogTime = Get-Date -Format "dd-MM-yyyy;hh:mm:ss"
 $Time = Get-Date -Format "MM-dd-yyyy"
-$LogFile  = "<caminho>\criar_hostpool_" + $Time + ".log"
-$LogFile_error  = "<caminho>\Logs\error_" + $Time + ".log"
+$LogFile = "<caminho>\criar_hostpool_" + $Time + ".log"
+$LogFile_error = "<caminho>\Logs\error_" + $Time + ".log"
 $File_TemplateFile = "<caminho>\ARM-Templates\"
 $vmNumberOfInstances = $null
 $NameDeploy = "AVDDeployment_" + $hostpoolName
@@ -85,14 +85,15 @@ $File_TemplateFile = $File_TemplateFile + $Template_spec_hostpool + ".json"
 
 # Tags Alterar as tags "departamento", "centro_de_custo", ("empresa" = nome_empresa ou nome_empresa)
 $tags_avd = @{
-    "ambiente" = "<tag>"; `
-    "departamento" = $tags_departamento; `
-    "empresa" = "<tag>"; `
-    "gerenciamento" = "portal_azure"; `
-    "centro_de_custo" = $tags_avd_centro_de_custo; `
-    "sigla_avd" = $tags_avd_sigla_avd; `
-    "projeto_avd" = $tags_avd_projeto_avd; `
-    "empresa_avd" = $tags_avd_empresa_avd; }
+    "ambiente"            = "<tag>"; `
+        "departamento"    = $tags_departamento; `
+        "empresa"         = "<tag>"; `
+        "gerenciamento"   = "portal_azure"; `
+        "centro_de_custo" = $tags_avd_centro_de_custo; `
+        "sigla_avd"       = $tags_avd_sigla_avd; `
+        "projeto_avd"     = $tags_avd_projeto_avd; `
+        "empresa_avd"     = $tags_avd_empresa_avd; 
+}
 
 $administratorAccountPassword = "<senha_adm_join>"
 $vmAdministratorAccountPassword = "<senha_adm_local>"
@@ -124,200 +125,185 @@ Pause
 "Titulo;Data;Hora" | Out-File $LogFile -Append -Force
 "Inicio;" + $LogTime | Out-File $LogFile -Append -Force
 
-Try
-{ 
+Try { 
 
 
-#conectar na azure tenant nome_empresa
-"Conctar na azure;" + $LogTime | Out-File $LogFile -Append -Force
-Connect-AzAccount
-#Set-AzContext -Subscription $subscriptionId
+    #conectar na azure tenant nome_empresa
+    "Conctar na azure;" + $LogTime | Out-File $LogFile -Append -Force
+    Connect-AzAccount
+    #Set-AzContext -Subscription $subscriptionId
 
 }
 
-Catch{
+Catch {
 
-$ErrorMessage = $_.Exception.Message
-    "Error Concetar na azure;" +$ErrorMessage | Out-File $LogFile -Append -Force
-   Write-Host -BackgroundColor red -ForegroundColor Black -Object $ErrorMessage
-   exit
+    $ErrorMessage = $_.Exception.Message
+    "Error Concetar na azure;" + $ErrorMessage | Out-File $LogFile -Append -Force
+    Write-Host -BackgroundColor red -ForegroundColor Black -Object $ErrorMessage
+    exit
 }
 
 
-Try
-{ 
+Try { 
 
-# mantem token da azure
-function GetAuthToken($resource) {
-    $context = [Microsoft.Azure.Commands.Common.Authentication.Abstractions.AzureRmProfileProvider]::Instance.Profile.DefaultContext
-    $Token = [Microsoft.Azure.Commands.Common.Authentication.AzureSession]::Instance.AuthenticationFactory.Authenticate($context.Account, $context.Environment, $context.Tenant.Id.ToString(), $null, [Microsoft.Azure.Commands.Common.Authentication.ShowDialog]::Never, $null, $resource).AccessToken
-    $authHeader = @{
-        'Content-Type' = 'application/json'
-        Authorization  = 'Bearer ' + $Token
+    # mantem token da azure
+    function GetAuthToken($resource) {
+        $context = [Microsoft.Azure.Commands.Common.Authentication.Abstractions.AzureRmProfileProvider]::Instance.Profile.DefaultContext
+        $Token = [Microsoft.Azure.Commands.Common.Authentication.AzureSession]::Instance.AuthenticationFactory.Authenticate($context.Account, $context.Environment, $context.Tenant.Id.ToString(), $null, [Microsoft.Azure.Commands.Common.Authentication.ShowDialog]::Never, $null, $resource).AccessToken
+        $authHeader = @{
+            'Content-Type' = 'application/json'
+            Authorization  = 'Bearer ' + $Token
+        }
+        return $authHeader
     }
-    return $authHeader
-}
-$token = GetAuthToken -resource https://management.azure.com
-#Log
-"Mantem token da azure;" + $LogTime | Out-File $LogFile -Append -Force
+    $token = GetAuthToken -resource https://management.azure.com
+    #Log
+    "Mantem token da azure;" + $LogTime | Out-File $LogFile -Append -Force
 }
 
-Catch{
+Catch {
 
-$ErrorMessage = $_.Exception.Message
-    "Error manter conectado na azure;" +$ErrorMessage | Out-File $LogFile -Append -Force
-   Write-Host -BackgroundColor red -ForegroundColor Black -Object $ErrorMessage
-   exit
+    $ErrorMessage = $_.Exception.Message
+    "Error manter conectado na azure;" + $ErrorMessage | Out-File $LogFile -Append -Force
+    Write-Host -BackgroundColor red -ForegroundColor Black -Object $ErrorMessage
+    exit
 }
 
 
-try
-{
-Write-Host -BackgroundColor yellow -ForegroundColor Black -Object "Criando Resource Group: $Name_resource da Azure... "
-#Criar resource Group
-New-AzResourceGroup -Name $Name_resource -Location $Name_Location -Tag $tags_avd
-#Log
-"Criar resource Group;$Name_resource;" + $LogTime | Out-File $LogFile -Append -Force
+try {
+    Write-Host -BackgroundColor yellow -ForegroundColor Black -Object "Criando Resource Group: $Name_resource da Azure... "
+    #Criar resource Group
+    New-AzResourceGroup -Name $Name_resource -Location $Name_Location -Tag $tags_avd
+    #Log
+    "Criar resource Group;$Name_resource;" + $LogTime | Out-File $LogFile -Append -Force
 
 }
-catch
-{
-   $ErrorMessage = $_.Exception.Message
+catch {
+    $ErrorMessage = $_.Exception.Message
     "Error_Criar resource Group;$Name_resource;" + $LogTime | Out-File $LogFile_error -Append -Force
-   Write-Host -BackgroundColor red -ForegroundColor Black -Object $ErrorMessage
+    Write-Host -BackgroundColor red -ForegroundColor Black -Object $ErrorMessage
 }
 #######################################################################################################################################
 
-try
-{
-Write-Host -BackgroundColor yellow -ForegroundColor Black -Object "Criando HostPool: $Name_hostpool da Azure... "
-# Criar um pool de host
-$parameters = @{
-    Name = $Name_hostpool
-    ResourceGroupName = $Name_resource
-    HostPoolType = $Name_HostPoolType
-    LoadBalancerType = $Name_LoadBalancerType
-    PreferredAppGroupType = 'Desktop'
-    PersonalDesktopAssignmentType = 'Automatic'
-    Location = $Name_Location
-    Tag = $tags_avd
-}
+try {
+    Write-Host -BackgroundColor yellow -ForegroundColor Black -Object "Criando HostPool: $Name_hostpool da Azure... "
+    # Criar um pool de host
+    $parameters = @{
+        Name                          = $Name_hostpool
+        ResourceGroupName             = $Name_resource
+        HostPoolType                  = $Name_HostPoolType
+        LoadBalancerType              = $Name_LoadBalancerType
+        PreferredAppGroupType         = 'Desktop'
+        PersonalDesktopAssignmentType = 'Automatic'
+        Location                      = $Name_Location
+        Tag                           = $tags_avd
+    }
 
-New-AzWvdHostPool @parameters
-#Log
-"Criar um pool de host;$Name_resource;" + $LogTime | Out-File $LogFile -Append -Force
+    New-AzWvdHostPool @parameters
+    #Log
+    "Criar um pool de host;$Name_resource;" + $LogTime | Out-File $LogFile -Append -Force
 }
-catch
-{
+catch {
     Write-Host $_.Exception.Message -ForegroundColor Yellow
 }
 #######################################################################################################################################
-try
-{
-Write-Host -BackgroundColor yellow -ForegroundColor Black -Object "Criando Workspace: $Name_hostpool da Azure... "
-# Criar um workspace
-New-AzWvdWorkspace -ResourceGroupName $Name_resource `
-                        -Name $Name_hostpool `
-                        -Location $Name_Location `
-                        -FriendlyName $Name_hostpool `
-                        -ApplicationGroupReference $null `
-                        -Description 'Description'
+try {
+    Write-Host -BackgroundColor yellow -ForegroundColor Black -Object "Criando Workspace: $Name_hostpool da Azure... "
+    # Criar um workspace
+    New-AzWvdWorkspace -ResourceGroupName $Name_resource `
+        -Name $Name_hostpool `
+        -Location $Name_Location `
+        -FriendlyName $Name_hostpool `
+        -ApplicationGroupReference $null `
+        -Description 'Description'
 
-#Log
-"Criar um workspace;$Name_resource;" + $LogTime | Out-File $LogFile -Append -Force
+    #Log
+    "Criar um workspace;$Name_resource;" + $LogTime | Out-File $LogFile -Append -Force
 
 }
-catch
-{
+catch {
     Write-Host $_.Exception.Message -ForegroundColor Yellow
 }
 #######################################################################################################################################
-try
-{
+try {
 
-Write-Host -BackgroundColor yellow -ForegroundColor Black -Object "Criando Grupo de aplicativos: $Name_Aplication da Azure... "
-# Criar um grupo de aplicativos
-$hostPoolArmPath = (Get-AzWvdHostPool -Name $Name_hostpool -ResourceGroupName $Name_resource).Id
+    Write-Host -BackgroundColor yellow -ForegroundColor Black -Object "Criando Grupo de aplicativos: $Name_Aplication da Azure... "
+    # Criar um grupo de aplicativos
+    $hostPoolArmPath = (Get-AzWvdHostPool -Name $Name_hostpool -ResourceGroupName $Name_resource).Id
 
-$parameters = @{
-    Name = $Name_Aplication
-    ResourceGroupName = $Name_resource
-    ApplicationGroupType = 'Desktop'
-    HostPoolArmPath = $hostPoolArmPath
-    Location = $Name_Location
+    $parameters = @{
+        Name                 = $Name_Aplication
+        ResourceGroupName    = $Name_resource
+        ApplicationGroupType = 'Desktop'
+        HostPoolArmPath      = $hostPoolArmPath
+        Location             = $Name_Location
+    }
+
+    New-AzWvdApplicationGroup @parameters
+
+    #Log
+    "Criar um grupo de aplicativos;$Name_resource;" + $LogTime | Out-File $LogFile -Append -Force
+
 }
-
-New-AzWvdApplicationGroup @parameters
-
-#Log
-"Criar um grupo de aplicativos;$Name_resource;" + $LogTime | Out-File $LogFile -Append -Force
-
-}
-catch
-{
+catch {
     Write-Host $_.Exception.Message -ForegroundColor Yellow
 }
 
 #######################################################################################################################################
 
-try
-{
+try {
 
-Write-Host -BackgroundColor yellow -ForegroundColor Black -Object "Adicionar grupo de aplicativos desktop: $Name_Aplication da Azure... "
-# Criar um grupo de aplicativos
+    Write-Host -BackgroundColor yellow -ForegroundColor Black -Object "Adicionar grupo de aplicativos desktop: $Name_Aplication da Azure... "
+    # Criar um grupo de aplicativos
 
-# Listar grupo de aplicativos Desktop workspace
-$appGroupPath = (Get-AzWvdApplicationGroup -Name $Name_Aplication -ResourceGroupName $Name_resource).Id
+    # Listar grupo de aplicativos Desktop workspace
+    $appGroupPath = (Get-AzWvdApplicationGroup -Name $Name_Aplication -ResourceGroupName $Name_resource).Id
 
-# Adicionar grupo de aplicativo Desktop ao workspace
-Update-AzWvdWorkspace -Name $Name_hostpool -ResourceGroupName $Name_resource -ApplicationGroupReference $appGroupPath
+    # Adicionar grupo de aplicativo Desktop ao workspace
+    Update-AzWvdWorkspace -Name $Name_hostpool -ResourceGroupName $Name_resource -ApplicationGroupReference $appGroupPath
 
 
-#Log
-"Adicionar grupo de aplicativos desktop;$Name_resource;" + $LogTime | Out-File $LogFile -Append -Force
+    #Log
+    "Adicionar grupo de aplicativos desktop;$Name_resource;" + $LogTime | Out-File $LogFile -Append -Force
 
 }
-catch
-{
+catch {
     Write-Host $_.Exception.Message -ForegroundColor Yellow
 }
 
-try
-{
-Write-Host -BackgroundColor yellow -ForegroundColor Black -Object "Update Propriedades Hostpool: $Name_hostpool da Azure... "
-# Update Propriedades Hostpool
-Update-AzWvdHostPool -ResourceGroupName $Name_resource -Name $Name_hostpool -CustomRdpProperty $properties
+try {
+    Write-Host -BackgroundColor yellow -ForegroundColor Black -Object "Update Propriedades Hostpool: $Name_hostpool da Azure... "
+    # Update Propriedades Hostpool
+    Update-AzWvdHostPool -ResourceGroupName $Name_resource -Name $Name_hostpool -CustomRdpProperty $properties
 
-#Log
-"Update Propriedades Hostpool;$Name_resource;" + $LogTime | Out-File $LogFile -Append -Force
+    #Log
+    "Update Propriedades Hostpool;$Name_resource;" + $LogTime | Out-File $LogFile -Append -Force
 
-Write-Host -BackgroundColor yellow -ForegroundColor Black -Object "Habilitar iniciar VM no Hostpool: $Name_hostpool da Azure... "
-# Habilitar iniciar VM
-Update-AzWvdHostPool -ResourceGroupName $Name_resource -Name $Name_hostpool -StartVMOnConnect:$true
+    Write-Host -BackgroundColor yellow -ForegroundColor Black -Object "Habilitar iniciar VM no Hostpool: $Name_hostpool da Azure... "
+    # Habilitar iniciar VM
+    Update-AzWvdHostPool -ResourceGroupName $Name_resource -Name $Name_hostpool -StartVMOnConnect:$true
 
-#Log
-"Habilitar iniciar VM;$Name_resource;" + $LogTime | Out-File $LogFile -Append -Force
+    #Log
+    "Habilitar iniciar VM;$Name_resource;" + $LogTime | Out-File $LogFile -Append -Force
 
-# Adicionar um grupo de aplicativos a um workspace
-#$appGroupPath = (Get-AzWvdApplicationGroup -Name $Name_hostpool -ResourceGroupName $Name_resource).Id
-#Update-AzWvdWorkspace -Name $Name_hostpool -ResourceGroupName $Name_resource -ApplicationGroupReference $appGroupPath
+    # Adicionar um grupo de aplicativos a um workspace
+    #$appGroupPath = (Get-AzWvdApplicationGroup -Name $Name_hostpool -ResourceGroupName $Name_resource).Id
+    #Update-AzWvdWorkspace -Name $Name_hostpool -ResourceGroupName $Name_resource -ApplicationGroupReference $appGroupPath
 
 }
-catch
-{
+catch {
     Write-Host $_.Exception.Message -ForegroundColor Yellow
 }
 
 
 #######################################################################################################################################
-try
-{
+try {
 
-Write-Host -BackgroundColor yellow -ForegroundColor Black -Object "Incluido Grupo: $NameGroup no Hostpool: $Name_hostpool da Azure... "
-# Get the object ID of the user group you want to assign to the application group
-$userGroupId = (Get-AzADGroup -DisplayName $NameGroup).Id
+    Write-Host -BackgroundColor yellow -ForegroundColor Black -Object "Incluido Grupo: $NameGroup no Hostpool: $Name_hostpool da Azure... "
+    # Get the object ID of the user group you want to assign to the application group
+    $userGroupId = (Get-AzADGroup -DisplayName $NameGroup).Id
 
-# Assign the AAD group (Object ID)  to the Application Group
+    # Assign the AAD group (Object ID)  to the Application Group
 
     write-host "Assigning the AAD Group to the Application Group"
     $AssignAADGrpAG = New-AzRoleAssignment -ObjectId $userGroupId `
@@ -326,30 +312,27 @@ $userGroupId = (Get-AzADGroup -DisplayName $NameGroup).Id
         -ResourceGroupName $Name_resource `
         -ResourceType 'Microsoft.DesktopVirtualization/applicationGroups' `
         -ErrorAction STOP
-#Log
-"Adicionar grupo ;$NameGroup;" + $LogTime | Out-File $LogFile -Append -Force
+    #Log
+    "Adicionar grupo ;$NameGroup;" + $LogTime | Out-File $LogFile -Append -Force
 
 }
-catch
-{
+catch {
     Write-Host $_.Exception.Message -ForegroundColor Yellow
 }
 
 #######################################################################################################################################
-try
-{
-Write-Host -BackgroundColor yellow -ForegroundColor Black -Object "Gerar Token no Hostpool: $Name_hostpool da Azure... "
-# Gerar token do Hostpool
-$parameters = @{
-    HostPoolName = $Name_hostpool
-    ResourceGroupName = $Name_resource
-    ExpirationTime = $((Get-Date).ToUniversalTime().AddHours(24).ToString('yyyy-MM-ddTHH:mm:ss.fffffffZ'))
-}
+try {
+    Write-Host -BackgroundColor yellow -ForegroundColor Black -Object "Gerar Token no Hostpool: $Name_hostpool da Azure... "
+    # Gerar token do Hostpool
+    $parameters = @{
+        HostPoolName      = $Name_hostpool
+        ResourceGroupName = $Name_resource
+        ExpirationTime    = $((Get-Date).ToUniversalTime().AddHours(24).ToString('yyyy-MM-ddTHH:mm:ss.fffffffZ'))
+    }
 
-New-AzWvdRegistrationInfo @parameters
+    New-AzWvdRegistrationInfo @parameters
 }
-catch
-{
+catch {
     Write-Host $_.Exception.Message -ForegroundColor Yellow
 }
 #Log
@@ -369,19 +352,19 @@ $ExpirationTime = $((get-date).ToUniversalTime().AddDays(1).ToString('yyyy-MM-dd
 #"Gerar token do Hostpool;$Name_resource;" + $LogTime | Out-File $LogFile -Append -Force
 
 $params = @{
-   hostpoolName = $Name_hostpool
-   vmResourceGroup = $Name_resource
-   vmNamePrefix = $vmNamePrefix
-   vmInitialNumber = $vmInitialNumber 
-   vmNumberOfInstances = $vmNumberOfInstances
-   administratorAccountPassword = $administratorAccountPassword
-   vmAdministratorAccountPassword = $vmAdministratorAccountPassword
-   hostpoolToken = $hostpoolToken.Token
+    hostpoolName                   = $Name_hostpool
+    vmResourceGroup                = $Name_resource
+    vmNamePrefix                   = $vmNamePrefix
+    vmInitialNumber                = $vmInitialNumber 
+    vmNumberOfInstances            = $vmNumberOfInstances
+    administratorAccountPassword   = $administratorAccountPassword
+    vmAdministratorAccountPassword = $vmAdministratorAccountPassword
+    hostpoolToken                  = $hostpoolToken.Token
 
 }
 
 New-AzResourceGroupDeployment `
-  -Name $NameDeploy `
-  -ResourceGroupName $Name_resource `
-  -TemplateFile $File_TemplateFile `
-  -TemplateParameterObject $params -Verbose
+    -Name $NameDeploy `
+    -ResourceGroupName $Name_resource `
+    -TemplateFile $File_TemplateFile `
+    -TemplateParameterObject $params -Verbose

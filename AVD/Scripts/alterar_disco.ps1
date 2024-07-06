@@ -21,7 +21,7 @@ Write-Host -BackgroundColor yellow -ForegroundColor Black -Object "Necessario in
 #variaveis
 $LogTime = Get-Date -Format "dd-MM-yyyy_hh-mm-ss"
 $Time = Get-Date -Format "MM-dd-yyyy"
-$LogFile  = "CAMINHO\remover_vms_" + $Time + ".log"
+$LogFile = "CAMINHO\remover_vms_" + $Time + ".log"
 $subscriptionId = "<subscriptionid>"
 # Choose between Standard_LRS, StandardSSD_LRS, StandardSSD_ZRS, Premium_ZRS, and Premium_LRS based on your scenario
 $storageType = 'Standard_LRS'
@@ -34,8 +34,8 @@ $REStoken_azure = $null
  
 // TODO: Verificar o token da azure criar novo modulo
 #Verificar token azure
-while ($token_azure  -eq $null ){
-$REStoken_azure  = Read-Host "
+while ($token_azure -eq $null ) {
+    $REStoken_azure = Read-Host "
  
 ============================= Script SUPORTE-VDI =============================
  
@@ -46,63 +46,61 @@ Valor:
 ==============================================================================
 "  
  
-if ($REStoken_azure -eq "1" ){
-$token_azure = "1"
+    if ($REStoken_azure -eq "1" ) {
+        $token_azure = "1"
  
-Try
-{ 
+        Try { 
  
-#conectar na azure tenant 
-"Conctar na azure;" + $LogTime | Out-File $LogFile -Append -Force
-Connect-AzAccount
-Set-AzContext -Subscription $subscriptionId
+            #conectar na azure tenant 
+            "Conctar na azure;" + $LogTime | Out-File $LogFile -Append -Force
+            Connect-AzAccount
+            Set-AzContext -Subscription $subscriptionId
  
-}
+        }
  
-Catch{
+        Catch {
  
-$ErrorMessage = $_.Exception.Message
-    "Error Concetar na azure;" +$ErrorMessage | Out-File $LogFile -Append -Force
-   Write-Host -BackgroundColor red -ForegroundColor Black -Object $ErrorMessage
-   exit
-}
+            $ErrorMessage = $_.Exception.Message
+            "Error Concetar na azure;" + $ErrorMessage | Out-File $LogFile -Append -Force
+            Write-Host -BackgroundColor red -ForegroundColor Black -Object $ErrorMessage
+            exit
+        }
  
-}
-if ($REStoken_azure -eq "2" ){
-$token_azure = "2"
- 
-Try
-{ 
- 
-# mantem token da azure
-function GetAuthToken($resource) {
-    $context = [Microsoft.Azure.Commands.Common.Authentication.Abstractions.AzureRmProfileProvider]::Instance.Profile.DefaultContext
-    $Token = [Microsoft.Azure.Commands.Common.Authentication.AzureSession]::Instance.AuthenticationFactory.Authenticate($context.Account, $context.Environment, $context.Tenant.Id.ToString(), $null, [Microsoft.Azure.Commands.Common.Authentication.ShowDialog]::Never, $null, $resource).AccessToken
-    $authHeader = @{
-        'Content-Type' = 'application/json'
-        Authorization  = 'Bearer ' + $Token
     }
-    return $authHeader
-}
-$token = GetAuthToken -resource https://management.azure.com
-#Log
-"Mantem token da azure;" + $LogTime | Out-File $LogFile -Append -Force
-}
+    if ($REStoken_azure -eq "2" ) {
+        $token_azure = "2"
  
-Catch{
+        Try { 
  
-$ErrorMessage = $_.Exception.Message
-    "Error manter conectado na azure;" +$ErrorMessage | Out-File $LogFile -Append -Force
-   Write-Host -BackgroundColor red -ForegroundColor Black -Object $ErrorMessage
-   exit
-}
+            # mantem token da azure
+            function GetAuthToken($resource) {
+                $context = [Microsoft.Azure.Commands.Common.Authentication.Abstractions.AzureRmProfileProvider]::Instance.Profile.DefaultContext
+                $Token = [Microsoft.Azure.Commands.Common.Authentication.AzureSession]::Instance.AuthenticationFactory.Authenticate($context.Account, $context.Environment, $context.Tenant.Id.ToString(), $null, [Microsoft.Azure.Commands.Common.Authentication.ShowDialog]::Never, $null, $resource).AccessToken
+                $authHeader = @{
+                    'Content-Type' = 'application/json'
+                    Authorization  = 'Bearer ' + $Token
+                }
+                return $authHeader
+            }
+            $token = GetAuthToken -resource https://management.azure.com
+            #Log
+            "Mantem token da azure;" + $LogTime | Out-File $LogFile -Append -Force
+        }
  
-}
+        Catch {
  
-if ($REStoken_azure -ne "1" -and $REStoken_azure -ne "2" ){
-$token_azure = $null
-cls
-}
+            $ErrorMessage = $_.Exception.Message
+            "Error manter conectado na azure;" + $ErrorMessage | Out-File $LogFile -Append -Force
+            Write-Host -BackgroundColor red -ForegroundColor Black -Object $ErrorMessage
+            exit
+        }
+ 
+    }
+ 
+    if ($REStoken_azure -ne "1" -and $REStoken_azure -ne "2" ) {
+        $token_azure = $null
+        cls
+    }
 }
  
 
@@ -111,91 +109,92 @@ cls
 $total_vms = Get-AzResource -ResourceType "Microsoft.Compute/virtualMachines" | Select-Object -Property ResourceName, ResourceGroupName, Type
 
 
-foreach ($vms in $total_vms){
+foreach ($vms in $total_vms) {
 
-#propriedades hardware vms 
-$vmConfig = Get-AzVM -ResourceGroupName $vms.ResourceGroupName -Name $vms.ResourceName
-# Status da vm ($vmstatus.Statuses.code[1] -eq "PowerState/deallocated" )
-$vmstatus = Get-AzVM -ResourceGroupName $vms.ResourceGroupName -Name $vms.ResourceName -Status
-#nome da vm
-$namevm = $vms.ResourceName
+    #propriedades hardware vms 
+    $vmConfig = Get-AzVM -ResourceGroupName $vms.ResourceGroupName -Name $vms.ResourceName
+    # Status da vm ($vmstatus.Statuses.code[1] -eq "PowerState/deallocated" )
+    $vmstatus = Get-AzVM -ResourceGroupName $vms.ResourceGroupName -Name $vms.ResourceName -Status
+    #nome da vm
+    $namevm = $vms.ResourceName
 
-#vm name
-#$vms.ResourceName
+    #vm name
+    #$vms.ResourceName
 
-# tipo de hardware
-#$vmConfig.HardwareProfile.VmSize
+    # tipo de hardware
+    #$vmConfig.HardwareProfile.VmSize
 
-#nome disco
-#$vmConfig.StorageProfile.OsDisk.Name 
+    #nome disco
+    #$vmConfig.StorageProfile.OsDisk.Name 
 
-#imagem referencia
-#$vmConfig.StorageProfile.ImageReference
+    #imagem referencia
+    #$vmConfig.StorageProfile.ImageReference
 
-Try
-{ 
+    Try { 
 
-$diskName = $vmConfig.StorageProfile.OsDisk.Name 
-# resource group that contains the managed disk
-$rgName = $vms.ResourceGroupName
-# Premium capable size 
-$size = $vmConfig.HardwareProfile.VmSize
+        $diskName = $vmConfig.StorageProfile.OsDisk.Name 
+        # resource group that contains the managed disk
+        $rgName = $vms.ResourceGroupName
+        # Premium capable size 
+        $size = $vmConfig.HardwareProfile.VmSize
 
-# Listar tipo do disco
-$disk = Get-AzDisk -DiskName $diskName -ResourceGroupName $rgName
+        # Listar tipo do disco
+        $disk = Get-AzDisk -DiskName $diskName -ResourceGroupName $rgName
 
-# type disco 'Standard_LRS'
-#$disk.Sku.Name
+        # type disco 'Standard_LRS'
+        #$disk.Sku.Name
 
-# Get parent VM resource
-$vmResource = Get-AzResource -ResourceId $disk.ManagedBy
+        # Get parent VM resource
+        $vmResource = Get-AzResource -ResourceId $disk.ManagedBy
 
-#verifica status vm
-if ($vmstatus.Statuses.code[1] -eq "PowerState/deallocated" ){
+        #verifica status vm
+        if ($vmstatus.Statuses.code[1] -eq "PowerState/deallocated" ) {
 
-Write-Host -BackgroundColor green -ForegroundColor Black -Object "VM: $namevm Desligada "
-
-
-}else{
-
-Write-Host -BackgroundColor yellow -ForegroundColor Black -Object "VM: $namevm Ligada, desligando... "
-
-# Stop and deallocate the VM before changing the storage type
-Stop-AzVM -ResourceGroupName $vms.ResourceGroupName -Name $vms.ResourceName -Force
-
-}
+            Write-Host -BackgroundColor green -ForegroundColor Black -Object "VM: $namevm Desligada "
 
 
-$vm = Get-AzVM -ResourceGroupName $vms.ResourceGroupName -Name $vms.ResourceName
+        }
+        else {
 
-# Change the VM size to a size that supports Premium storage
-# Skip this step if converting storage from Premium to Standard
-$vm.HardwareProfile.VmSize = $size
-#Update-AzVM -VM $vm -ResourceGroupName $rgName
+            Write-Host -BackgroundColor yellow -ForegroundColor Black -Object "VM: $namevm Ligada, desligando... "
 
+            # Stop and deallocate the VM before changing the storage type
+            Stop-AzVM -ResourceGroupName $vms.ResourceGroupName -Name $vms.ResourceName -Force
 
-if ($disk.Sku.Name -eq $storageType ){
-
-Write-Host -BackgroundColor green -ForegroundColor Black -Object "VM: $namevm ja possui o disco type: $storageType "
+        }
 
 
-}else{
+        $vm = Get-AzVM -ResourceGroupName $vms.ResourceGroupName -Name $vms.ResourceName
 
-Write-Host -BackgroundColor yellow -ForegroundColor Black -Object "Alterando disco da VM: $namevm para type: $storageType "
-# Update the storage type
-$disk.Sku = [Microsoft.Azure.Management.Compute.Models.DiskSku]::new($storageType)
-$disk | Update-AzDisk
-
-}
+        # Change the VM size to a size that supports Premium storage
+        # Skip this step if converting storage from Premium to Standard
+        $vm.HardwareProfile.VmSize = $size
+        #Update-AzVM -VM $vm -ResourceGroupName $rgName
 
 
-#Start-AzVM -ResourceGroupName $vm.ResourceGroupName -Name $vm.Name
-}
+        if ($disk.Sku.Name -eq $storageType ) {
 
-Catch{
+            Write-Host -BackgroundColor green -ForegroundColor Black -Object "VM: $namevm ja possui o disco type: $storageType "
 
-$ErrorMessage = $_.Exception.Message
-    $namevm + ";" +$ErrorMessage | Out-File $LogFile -Append -Force
-    Write-Host -BackgroundColor red -ForegroundColor Black -Object $ErrorMessage
-}
+
+        }
+        else {
+
+            Write-Host -BackgroundColor yellow -ForegroundColor Black -Object "Alterando disco da VM: $namevm para type: $storageType "
+            # Update the storage type
+            $disk.Sku = [Microsoft.Azure.Management.Compute.Models.DiskSku]::new($storageType)
+            $disk | Update-AzDisk
+
+        }
+
+
+        #Start-AzVM -ResourceGroupName $vm.ResourceGroupName -Name $vm.Name
+    }
+
+    Catch {
+
+        $ErrorMessage = $_.Exception.Message
+        $namevm + ";" + $ErrorMessage | Out-File $LogFile -Append -Force
+        Write-Host -BackgroundColor red -ForegroundColor Black -Object $ErrorMessage
+    }
 }

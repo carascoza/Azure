@@ -16,8 +16,8 @@ links: https://github.com/Azure/RDS-Templates/tree/master/wvd-templates/Create%2
 #variaveis
 $LogTime = Get-Date -Format "dd-MM-yyyy;hh:mm:ss"
 $Time = Get-Date -Format "MM-dd-yyyy"
-$LogFile  = "<caminho\criar_hostpool_>" + $Time + ".log"
-$LogFile_error  = "<caminho\Logs\error_>" + $Time + ".log"
+$LogFile = "<caminho\criar_hostpool_>" + $Time + ".log"
+$LogFile_error = "<caminho\Logs\error_>" + $Time + ".log"
 $ExportFilePath = "<caminho>"
 $token_azure = $null
 $REStoken_azure = $null
@@ -39,7 +39,7 @@ $location = "eastus2"
 # Nome Vnet
 $existingVnetName = "vnet-prd-US"
 # Nome Subnet
-$existingSubnetName ="vnet-prd-us"
+$existingSubnetName = "vnet-prd-us"
 # Resource Group Vnet
 $virtualNetworkResourceGroupName = "vnet-prd"
 # Tipo 'Pooled' (Multisession), Tipo 'Personal'' (dedicado), ""Alterar se necessario Padrão Personal""
@@ -71,8 +71,8 @@ $ExpirationTime = $((get-date).ToUniversalTime().AddDays(1).ToString('yyyy-MM-dd
 
 
 #Verificar token azure
-while ($token_azure  -eq $null ){
-$REStoken_azure  = Read-Host "
+while ($token_azure -eq $null ) {
+    $REStoken_azure = Read-Host "
 
 ============================= Script SUPORTE-VDI =============================
 
@@ -83,66 +83,64 @@ Valor:
 ==============================================================================
 "  
 
-if ($REStoken_azure -eq "1" ){
-$token_azure = "1"
+    if ($REStoken_azure -eq "1" ) {
+        $token_azure = "1"
 
 
-Try
-{ 
+        Try { 
 
 
-#conectar na azure tenant
-"Conctar na azure;" + $LogTime | Out-File $LogFile -Append -Force
-Connect-AzAccount
-#Set-AzContext -Subscription $subscriptionId
+            #conectar na azure tenant
+            "Conctar na azure;" + $LogTime | Out-File $LogFile -Append -Force
+            Connect-AzAccount
+            #Set-AzContext -Subscription $subscriptionId
 
-}
+        }
 
-Catch{
+        Catch {
 
-$ErrorMessage = $_.Exception.Message
-    "Error Concetar na azure;" +$ErrorMessage | Out-File $LogFile -Append -Force
-   Write-Host -BackgroundColor red -ForegroundColor Black -Object $ErrorMessage
-   exit
-}
+            $ErrorMessage = $_.Exception.Message
+            "Error Concetar na azure;" + $ErrorMessage | Out-File $LogFile -Append -Force
+            Write-Host -BackgroundColor red -ForegroundColor Black -Object $ErrorMessage
+            exit
+        }
 
 
-}
-if ($REStoken_azure -eq "2" ){
-$token_azure = "2"
-
-Try
-{ 
-
-# mantem token da azure
-function GetAuthToken($resource) {
-    $context = [Microsoft.Azure.Commands.Common.Authentication.Abstractions.AzureRmProfileProvider]::Instance.Profile.DefaultContext
-    $Token = [Microsoft.Azure.Commands.Common.Authentication.AzureSession]::Instance.AuthenticationFactory.Authenticate($context.Account, $context.Environment, $context.Tenant.Id.ToString(), $null, [Microsoft.Azure.Commands.Common.Authentication.ShowDialog]::Never, $null, $resource).AccessToken
-    $authHeader = @{
-        'Content-Type' = 'application/json'
-        Authorization  = 'Bearer ' + $Token
     }
-    return $authHeader
-}
-$token = GetAuthToken -resource https://management.azure.com
-#Log
-"Mantem token da azure;" + $LogTime | Out-File $LogFile -Append -Force
-}
+    if ($REStoken_azure -eq "2" ) {
+        $token_azure = "2"
 
-Catch{
+        Try { 
 
-$ErrorMessage = $_.Exception.Message
-    "Error manter conectado na azure;" +$ErrorMessage | Out-File $LogFile -Append -Force
-   Write-Host -BackgroundColor red -ForegroundColor Black -Object $ErrorMessage
-   exit
-}
+            # mantem token da azure
+            function GetAuthToken($resource) {
+                $context = [Microsoft.Azure.Commands.Common.Authentication.Abstractions.AzureRmProfileProvider]::Instance.Profile.DefaultContext
+                $Token = [Microsoft.Azure.Commands.Common.Authentication.AzureSession]::Instance.AuthenticationFactory.Authenticate($context.Account, $context.Environment, $context.Tenant.Id.ToString(), $null, [Microsoft.Azure.Commands.Common.Authentication.ShowDialog]::Never, $null, $resource).AccessToken
+                $authHeader = @{
+                    'Content-Type' = 'application/json'
+                    Authorization  = 'Bearer ' + $Token
+                }
+                return $authHeader
+            }
+            $token = GetAuthToken -resource https://management.azure.com
+            #Log
+            "Mantem token da azure;" + $LogTime | Out-File $LogFile -Append -Force
+        }
 
-}
+        Catch {
 
-if ($REStoken_azure -ne "1" -and $REStoken_azure -ne "2" ){
-$token_azure = $null
-cls
-}
+            $ErrorMessage = $_.Exception.Message
+            "Error manter conectado na azure;" + $ErrorMessage | Out-File $LogFile -Append -Force
+            Write-Host -BackgroundColor red -ForegroundColor Black -Object $ErrorMessage
+            exit
+        }
+
+    }
+
+    if ($REStoken_azure -ne "1" -and $REStoken_azure -ne "2" ) {
+        $token_azure = $null
+        cls
+    }
 }
 
 # Consultar token HostPool
@@ -152,65 +150,63 @@ $Get_hostpool = Get-AzWvdHostPool -Name $hostpoolName -ResourceGroupName $hostpo
 #$Get_hostpool | Format-List *
 
 # Validar Token HostPool
-if ($hostpoolToken.Token -eq $null ){
+if ($hostpoolToken.Token -eq $null ) {
 
-#######################################################################################################################################
-try
-{
-Write-Host -BackgroundColor yellow -ForegroundColor Black -Object "Gerar Token no Hostpool: $Name_hostpool da Azure... "
-# Gerar token do Hostpool
-$parameters = @{
-    HostPoolName = $hostpoolName
-    ResourceGroupName = $hostpoolResourceGroup
-    ExpirationTime = $((Get-Date).ToUniversalTime().AddHours(24).ToString('yyyy-MM-ddTHH:mm:ss.fffffffZ'))
-}
+    #######################################################################################################################################
+    try {
+        Write-Host -BackgroundColor yellow -ForegroundColor Black -Object "Gerar Token no Hostpool: $Name_hostpool da Azure... "
+        # Gerar token do Hostpool
+        $parameters = @{
+            HostPoolName      = $hostpoolName
+            ResourceGroupName = $hostpoolResourceGroup
+            ExpirationTime    = $((Get-Date).ToUniversalTime().AddHours(24).ToString('yyyy-MM-ddTHH:mm:ss.fffffffZ'))
+        }
 
-New-AzWvdRegistrationInfo @parameters
+        New-AzWvdRegistrationInfo @parameters
 
-Consultar token HostPool
-$hostpoolToken = Get-AzWvdRegistrationInfo -HostPoolName $hostpoolName -ResourceGroupName $hostpoolResourceGroup
+        Consultar token HostPool
+        $hostpoolToken = Get-AzWvdRegistrationInfo -HostPoolName $hostpoolName -ResourceGroupName $hostpoolResourceGroup
 
-# Formato de hora token
-$ExpirationTime = $((get-date).ToUniversalTime().AddDays(1).ToString('yyyy-MM-ddTHH:mm:ss.fffffffZ'))
-#Write-Host "$("##vso[task.setvariable variable=ExpirationTime]")$($ExpirationTime)"
+        # Formato de hora token
+        $ExpirationTime = $((get-date).ToUniversalTime().AddDays(1).ToString('yyyy-MM-ddTHH:mm:ss.fffffffZ'))
+        #Write-Host "$("##vso[task.setvariable variable=ExpirationTime]")$($ExpirationTime)"
 
-#Log
-#"Gerar token do Hostpool;$Name_resource;" + $LogTime | Out-File $LogFile -Append -Force
+        #Log
+        #"Gerar token do Hostpool;$Name_resource;" + $LogTime | Out-File $LogFile -Append -Force
 
-}
-catch
-{
-    Write-Host $_.Exception.Message -ForegroundColor Yellow
-}
+    }
+    catch {
+        Write-Host $_.Exception.Message -ForegroundColor Yellow
+    }
 
 }
-else{
+else {
 
 }
 
 $params = @{
-   hostpoolName = $hostpoolName
-   hostpoolType = $hostpoolType
-   personalDesktopAssignmentType = $personalDesktopAssignmentType
-   loadBalancerType = $loadBalancerType
-   ouPath = $ouPath
-   vmResourceGroup = $hostpoolResourceGroup
-   vmNamePrefix = $vmNamePrefix
-   vmNumberOfInstances = $vmNumberOfInstances
-   vmSize = $vmSize
-   vmDiskType = $vmDiskType
-   administratorAccountPassword = $administratorAccountPassword
-   vmAdministratorAccountPassword = $vmAdministratorAccountPassword
-   existingVnetName = $existingVnetName
-   existingSubnetName = $existingSubnetName
-   virtualNetworkResourceGroupName = $virtualNetworkResourceGroupName
-   tokenExpirationTime = $ExpirationTime
+    hostpoolName                    = $hostpoolName
+    hostpoolType                    = $hostpoolType
+    personalDesktopAssignmentType   = $personalDesktopAssignmentType
+    loadBalancerType                = $loadBalancerType
+    ouPath                          = $ouPath
+    vmResourceGroup                 = $hostpoolResourceGroup
+    vmNamePrefix                    = $vmNamePrefix
+    vmNumberOfInstances             = $vmNumberOfInstances
+    vmSize                          = $vmSize
+    vmDiskType                      = $vmDiskType
+    administratorAccountPassword    = $administratorAccountPassword
+    vmAdministratorAccountPassword  = $vmAdministratorAccountPassword
+    existingVnetName                = $existingVnetName
+    existingSubnetName              = $existingSubnetName
+    virtualNetworkResourceGroupName = $virtualNetworkResourceGroupName
+    tokenExpirationTime             = $ExpirationTime
 }
 
 New-AzResourceGroupDeployment `
-  -Name AVDDeployment `
-  -location $location `
-  -ResourceGroupName $hostpoolResourceGroup `
-  -TemplateFile "C:\Users\caras\Documents\Cloud\Azure\AVD\template_hostpool\novo\template.json" `
-  -TemplateParameterObject $params -Verbose 
+    -Name AVDDeployment `
+    -location $location `
+    -ResourceGroupName $hostpoolResourceGroup `
+    -TemplateFile "C:\Users\caras\Documents\Cloud\Azure\AVD\template_hostpool\novo\template.json" `
+    -TemplateParameterObject $params -Verbose 
  
