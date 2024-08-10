@@ -1,2 +1,2 @@
-# Azure
- Repositório azure
+# Scripts Azure
+ Repositório com Scripts AVD Azure
