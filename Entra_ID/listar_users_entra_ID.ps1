@@ -49,8 +49,9 @@ Catch {
 # Get all users and select the required properties
 Write-Host "Listando Users Entra ID... Aguarde..... " 
 Write-Host "" 
-$users = Get-AzureADUser -All $true | Where-Object {$_.UserType -eq "Member"} | Select-Object ObjectId, UserPrincipalName, Mail, DisplayName, AccountEnabled, Department, ImmutableId, JobTitle, LastDirSyncTime, UserType, @{Name="ExtensionPropertyString";Expression={($_.ExtensionProperty
- | ConvertTo-Json -Compress)}}
+$users = Get-AzureADUser -All $true | Where-Object { $_.UserType -eq "Member" } | Select-Object ObjectId, UserPrincipalName, Mail, DisplayName, AccountEnabled, Department, ImmutableId, JobTitle, LastDirSyncTime, UserType, @{Name = "ExtensionPropertyString"; Expression = { ($_.ExtensionProperty
+            | ConvertTo-Json -Compress) }
+}
 Write-Host "Exportando Users Entra ID para arquivo csv ($ReportList_Users)... Aguarde..... "
 #Write-Host "" 
 $users | Export-Csv -Path $ReportList_Users -NoTypeInformation
