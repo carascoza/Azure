@@ -8,6 +8,14 @@ Scripts para realizar relatórios, criação de hostpool, vms, remoção de vms 
 
 ## Scripts
 
+>Scripts para implementar a solução de Perfil móvel para usuário no AVD, [Fslogix](./Scripts/Fslogix/).<br>
+>Scripts para solução ambiente de host de sessão das estações virtuais, [HostPool](./Scripts/Hostpool/).<br>
+>Scripts para solução de Keys Vault para armazenamento de chaves, segredos e certificados, [KeyVault](./Scripts/KeyVault/).<br>
+>Scripts para solução Relatórios do ambiente AVD e seus componentes, [Relatórios](./Scripts/Relatorios/).<br>
+>Scripts para solução as tags da Azure, [Tags](./Scripts/Tags/).<br>
+>Scripts para solução Vms, [Vms](./Scripts/Vms/).<br>
+>Scripts para solução o ambiente de redes da Azure, [Vnet](./Scripts/Vnet/).<br>
+
 - `Fslogix:`: Scripts para implementar a solução de Perfil móvel para usuário no AVD (Permite que os perfis sejam armazenados em um provedor de armazenamento, eliminando atrasos associados a soluções que copiam perfis para e de um local de rede, storage account com SMB.).
 
 - `HostPool:`: Scripts para solução ambiente de host de sessão das estações virtuais (Um HostPool é um componente essencial da Área de Trabalho Virtual do Azure (Azure Virtual Desktop). Ele consiste em uma coleção de uma ou mais máquinas virtuais (VMs) idênticas que são usadas para hospedar sessões de usuários). 
