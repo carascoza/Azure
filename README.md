@@ -1,5 +1,5 @@
 # Ambiente de scripts para Azure Cloud Microsoft
 
 >[!IMPORTANT]
-> :construction: Projeto em construção :construction:
+> :construction: Projeto em construção :construction:<br>
 >Scripts em desenvolvimento para Ambiente Cloud Azure, [Scripts AVD](./AVD/Scripts/README.md).
