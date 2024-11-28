@@ -19,9 +19,12 @@ $LogTime = Get-Date -Format "dd-MM-yyyy;hh:mm:ss"
 $Time = Get-Date -Format "MM-dd-yyyy"
 $LogFile = "<caminho>\policy_tags_" + $Time + ".log"
 $subscriptionId = "sua_assinatura"
+$resourceGroupName = "seu_grupo_de_recursos"
+$identityName = "seu_nome_de_identidade"
 $policyName = "apply-default-tags"
 $policyDisplayName = "Apply Default Tags"
-$policyDescription = "Applies default tags to all newly created resources."
+$policyDescription = "Applies default tags to all newly created resources in East US 2."
+$roleDefinitionId = "b24988ac-6180-42a0-ab88-20f7382dd24c" # ID da função "Contributor"
 
 #Cria arquivo log
 "Titulo;Data;Hora" | Out-File $LogFile -Append -Force
@@ -45,17 +48,33 @@ Catch {
     exit
 }
 
+
+# Criar uma nova identidade gerida (se não existir)
+if (-not (Get-AzUserAssignedIdentity -ResourceGroupName $resourceGroupName -Name $identityName -ErrorAction SilentlyContinue)) {
+    $identity = New-AzUserAssignedIdentity -ResourceGroupName $resourceGroupName -Name $identityName
+} else {
+    $identity = Get-AzUserAssignedIdentity -ResourceGroupName $resourceGroupName -Name $identityName
+}
+
 # Definir a política JSON corretamente
 $policyRule = @{
   "if" = @{
-    "field" = "type"
-    "equals" = "Microsoft.Resources/subscriptions/resourceGroups"
+    "allOf" = @(
+      @{
+        "field" = "type"
+        "equals" = "Microsoft.Resources/subscriptions/resourceGroups"
+      },
+      @{
+        "field" = "location"
+        "equals" = "eastus2"
+      }
+    )
   }
   "then" = @{
     "effect" = "modify"
     "details" = @{
       "roleDefinitionIds" = @(
-        "/providers/Microsoft.Authorization/roleDefinitions/{roleDefinitionId}"
+        "/providers/Microsoft.Authorization/roleDefinitions/$roleDefinitionId"
       )
       "operations" = @(
         @{
@@ -66,7 +85,7 @@ $policyRule = @{
         @{
           "operation" = "add"
           "field" = "tags.owner"
-          "value" = "name"
+          "value" = "carascoza"
         }
         @{
           "operation" = "add"
@@ -84,5 +103,7 @@ $policyJson = $policyRule | ConvertTo-Json -Depth 10
 # Criar a definição da política
 $policyDefinition = New-AzPolicyDefinition -Name $policyName -DisplayName $policyDisplayName -Description $policyDescription -Policy $policyJson
 
-# Atribuir a política à assinatura
-New-AzPolicyAssignment -Name $policyName -PolicyDefinition $policyDefinition -Scope "/subscriptions/$subscriptionId"
+# Atribuir a política à assinatura com a identidade gerida
+New-AzPolicyAssignment -Name $policyName -PolicyDefinition $policyDefinition -Scope "/subscriptions/$subscriptionId" -Identity $identity
+
+Write-Output "Política de tags padrão criada e atribuída com sucesso!"
