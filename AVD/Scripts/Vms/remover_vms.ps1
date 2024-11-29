@@ -128,7 +128,7 @@ foreach ($vms in $vms_Csv) {
         }
         $token = GetAuthToken -resource "https://management.azure.com"
         #remove vm HostPool
-        $vm_hostpool = $vms_vm + ".domino.com.br"
+        $vm_hostpool = $vms_vm + ".dominio.com.br"
         $ResourceGroupName = $vms_resource
         $hostpoolname = $vms_resource
         $SessionHostName = $vm_hostpool
