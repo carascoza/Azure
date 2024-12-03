@@ -4,15 +4,14 @@
 Title:         criar_vm_linux_RAS
 Description:   criar_vm_linux_RAS
 Usage:         .\criar_vm_linux_RAS.ps1
-version:       V1.0
+version:       V2.0
 Date_create:   28/11/2024
-Date_modified: 28/11/2024
+Date_modified: 03/12/2024
 links: 
 ===============================================================================
-
 "@
 
-#variaveis
+# Variáveis
 $LogTime = Get-Date -Format "dd-MM-yyyy;hh:mm:ss"
 $Time = Get-Date -Format "MM-dd-yyyy"
 $LogFile = "<caminho>\criar_vm_linux_RAS_" + $Time + ".log"
@@ -29,22 +28,23 @@ $publicIpName = $vmName + "-ip"
 $openPorts = @("22")
 $vnetName = "sua_vnet"
 $subnetName = "sua-subnet"
-$sshKeyName = "seu _ssh_key"
+$sshKeyName = "seu_ssh_key"
+$diskType = "Standard_LRS" # Tipo de disco, pode ser 'Standard_LRS', 'Premium_LRS' ou 'Standard HDD LRS'
+#$diskSizeGB = 30 # Tamanho do disco em GB
 
-#Cria arquivo log
+# Criar arquivo log
 "Titulo;Data;Hora" | Out-File $LogFile -Append -Force
 "Inicio;" + $LogTime | Out-File $LogFile -Append -Force
 
 Try { 
-    #conectar na azure tenant nome_empresa
-    "Conctar na azure;" + $LogTime | Out-File $LogFile -Append -Force
+    # Conectar na azure tenant nome_empresa
+    "Conectar na azure;" + $LogTime | Out-File $LogFile -Append -Force
     Connect-AzAccount
-    Set-AzContext -SubscriptionId $subscriptionId
+    Set-AzContext -SubscriptionId $subscription
 }
-
 Catch {
     $ErrorMessage = $_.Exception.Message
-    "Error Concetar na azure;" + $ErrorMessage | Out-File $LogFile -Append -Force
+    "Erro ao conectar na azure;" + $ErrorMessage | Out-File $LogFile -Append -Force
     Write-Host -BackgroundColor red -ForegroundColor Black -Object $ErrorMessage
     exit
 }
@@ -68,7 +68,8 @@ $image = "${imagePublisher}:${imageOffer}:${imageSku}:latest"
 $vmConfig = New-AzVMConfig -VMName $vmName -VMSize $vmSize |
     Set-AzVMOperatingSystem -Linux -ComputerName $vmName -Credential (Get-Credential) |
     Set-AzVMSourceImage -PublisherName $imagePublisher -Offer $imageOffer -Skus $imageSku -Version "latest" |
-    Add-AzVMNetworkInterface -Id $nic.Id
+    Add-AzVMNetworkInterface -Id $nic.Id |
+    Set-AzVMOSDisk -Name "${vmName}_OSDisk" -CreateOption FromImage -ManagedDiskStorageAccountType $diskType #-DiskSizeInGB $diskSizeGB
 
 # Criar a VM
 New-AzVM -ResourceGroupName $resourceGroupName -Location $location -VM $vmConfig
@@ -79,11 +80,11 @@ sudo apt-get update
 sudo apt-get install -y strongswan
 sudo sysctl -w net.ipv4.ip_forward=1
 sudo sh -c 'echo 1 > /proc/sys/net/ipv4/ip_forward'
-sudo sh -c 'echo "net.ipv4.ip_forward = 1" >> /etc/sysctl.conf'
+sudo sh -c 'echo 'net.ipv4.ip_forward = 1' >> /etc/sysctl.conf'
 "@
 
 # Criar um endereço IP público dinâmico com SKU Basic
-$publicIpDynamic = New-AzPublicIpAddress -ResourceGroupName $resourceGroupName -Name $publicIpName  -Location $location -AllocationMethod Dynamic -Sku Basic
+$publicIpDynamic = New-AzPublicIpAddress -ResourceGroupName $resourceGroupName -Name $publicIpName -Location $location -AllocationMethod Dynamic -Sku Basic
 
 # Obter a VM
 $vm = Get-AzVM -ResourceGroupName $resourceGroupName -Name $vmName
@@ -98,4 +99,5 @@ $nic.IpConfigurations[0].PublicIpAddress = $publicIpDynamic
 $nic | Set-AzNetworkInterface
 
 # Exibir o endereço IP público dinâmico da VM
-Get-AzPublicIpAddress -ResourceGroupName $resourceGroupName -Name $publicIpName  | Select-Object -ExpandProperty IpAddress
+Get-AzPublicIpAddress -ResourceGroupName $resourceGroupName -Name $publicIpName | Select-Object -ExpandProperty IpAddress
+
